@@ -157,6 +157,7 @@ const API = location.hostname.endsWith("github.io")
 const SIMPAN = "stokMenyanSesi";
 // susunan menu = susunan sheet Joe (Master Pembeli di web bernama Master Pelanggan)
 const MODUL = [
+  ["dashboard", "DASHBOARD", "Omset, pembelian pelanggan, barang masuk"],
   ["barang", "MASTER BARANG", "Nama dan harga barang"],
   ["pelanggan", "MASTER PELANGGAN", "Daftar pelanggan dan peti"],
   ["resep", "BAHAN PRODUK", "Bahan untuk membuat produk"],
@@ -169,7 +170,7 @@ const MODUL = [
 const BARIS_AWAL = 5;
 document.getElementById("nav").innerHTML = '<a href="#">Menu</a>' + MODUL.map(([k, n]) => `<a href="#${k}">${n}</a>`).join("");
 const isi = document.getElementById("isi");
-let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" };
+let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" }, rentang = null;
 try { sesi = JSON.parse(localStorage.getItem(SIMPAN)); } catch (e) { sesi = null; }
 
 const aman = t => String(t ?? "").replace(/[&<>"']/g, h => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[h]));
@@ -301,6 +302,38 @@ function layarMaster(jenis) {
     const x = daftar.find(y => y.id === +t.dataset.hapus);
     duaKali(t, () => kirim(jenis + "/hapus", { id: x.id }, x.nama + " dihapus."));
   }));
+}
+
+// ---------- dashboard: angka satu rentang tanggal ----------
+async function layarDashboard() {
+  const hari = data.hari_ini;
+  const mundur = n => { const t = new Date(hari + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() - n); return t.toISOString().slice(0, 10); };
+  const cepat = { hari: [hari, hari], minggu: [mundur(6), hari], bulan: [hari.slice(0, 8) + "01", hari], semua: ["", ""] };
+  if (!rentang) rentang = { dari: cepat.bulan[0], sampai: cepat.bulan[1] };
+  const r = await panggil("ringkasan?dari=" + rentang.dari + "&sampai=" + rentang.sampai);
+  const kini = ["bulan", "hari", "minggu", "semua"].find(k => cepat[k][0] === rentang.dari && cepat[k][1] === rentang.sampai);
+  const ubin = (judul, nilai, tuju, merah) => `<a class="cab" href="#${tuju}" style="min-height:0;padding:18px 20px"><div class="ket" style="margin:0;padding:0">${judul}</div><div class="nama ${merah ? "minus" : ""}">${nilai}</div></a>`;
+  const tabel = (judul, kepala, baris, kosong) => `<div><h2>${judul}</h2><div class="gulung" style="max-height:${Math.round(60 / 0.75)}vh">${
+    baris.length ? `<table><thead><tr>${kepala.map((k, i) => `<th class="${i ? "angka" : ""}">${k}</th>`).join("")}</tr></thead><tbody>${
+      baris.map(b => "<tr>" + b.map((v, i) => `<td class="${i ? "angka" : ""}">${i ? v : aman(v)}</td>`).join("") + "</tr>").join("")}</tbody></table>`
+    : `<div class="kosong">${kosong}</div>`}</div></div>`;
+  const minus = data.barang.filter(b => b.stok < 0).length;
+  isi.innerHTML = `<div class="kartu" style="margin-bottom:16px"><div class="saring">
+      <label>Dari tanggal<input id="dDari" type="date" value="${rentang.dari}"></label>
+      <label>Sampai tanggal<input id="dSampai" type="date" value="${rentang.sampai}"></label>
+      <button class="utama" id="dTampil">Tampilkan</button>
+      <div class="pil">${[["hari", "Hari ini"], ["minggu", "7 hari"], ["bulan", "Bulan ini"], ["semua", "Semua"]].map(([k, n]) => `<button class="tipis${k === kini ? " kini" : ""}" data-cepat="${k}">${n}</button>`).join("")}</div></div>
+      <div class="pesan" id="dPesan"></div></div>
+    <div class="pilih">${ubin("Omset", rupiah(r.total.omset), "laporan")}${ubin("Barang keluar", angka(r.total.keluar), "keluar")}${ubin("Barang masuk", angka(r.total.masuk), "masuk")}${
+      ubin("Permintaan belum dikirim", data.permintaan.length, "permintaan")}${ubin("Barang stok minus", minus, "stok", minus > 0)}</div>
+    <div class="dua rata" style="margin-top:24px">${tabel("Pembelian per pelanggan", ["Pelanggan", "Qty", "Baris", "Harga"], r.per_pelanggan.map(x => [x.pelanggan, angka(x.keluar), x.baris, angka(x.omset)]), "Tidak ada barang keluar pada tanggal ini.")}${
+      tabel("Per hari", ["Tanggal", "Masuk", "Keluar", "Omset"], r.per_hari.map(x => [tgl(x.tanggal), angka(x.masuk), angka(x.keluar), angka(x.omset)]), "Tidak ada catatan pada tanggal ini.")}</div>
+    <div class="dua rata" style="margin-top:24px">${tabel("Barang keluar", ["Nama barang", "Qty", "Harga"], r.keluar_barang.map(x => [x.barang, angka(x.keluar), angka(x.omset)]), "Tidak ada barang keluar pada tanggal ini.")}${
+      tabel("Barang masuk", ["Nama barang", "Qty"], r.masuk_barang.map(x => [x.barang, angka(x.masuk)]), "Tidak ada barang masuk pada tanggal ini.")}</div>
+    <div class="catatan">Omset = jumlah kolom Harga barang keluar pada rentang tanggal. Permintaan dan stok minus adalah keadaan saat ini, tidak ikut rentang tanggal.</div>`;
+  const ulang = async (dari, sampai) => { rentang = { dari, sampai }; try { await layarDashboard(); } catch (g) { pesan("dPesan", g.message); } };
+  el("dTampil").addEventListener("click", () => ulang(el("dDari").value, el("dSampai").value));
+  isi.querySelectorAll("[data-cepat]").forEach(t => t.addEventListener("click", () => ulang(...cepat[t.dataset.cepat])));
 }
 
 function layarStok() {
@@ -607,6 +640,7 @@ async function tampil() {
     if (k === "barang" || k === "pelanggan") layarMaster(k);
     else if (k === "stok") layarStok();
     else if (k === "resep") layarResep();
+    else if (k === "dashboard") await layarDashboard();
     else if (k === "laporan") await layarLaporan();
     else await layarCatat(k);
   } catch (g) { if (sesi) kotakGagal(g); }

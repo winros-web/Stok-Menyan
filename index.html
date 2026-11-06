@@ -14,7 +14,7 @@ body{margin:0;background:#11171d;color:#e6ecf1;font:19px/1.45 "Aptos Narrow","Ar
 @media (min-width:700px){html{zoom:.75}:root{--skala:.75}}
 
 .atas{position:sticky;top:0;z-index:9;background:#11171d;border-bottom:1px solid #2a3642}
-.atas .bungkus{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap}
+.atas .bungkus{padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap}
 .atas .merek{font-weight:600;font-size:24px;letter-spacing:.3em}
 .atas .kanan{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:8px}
 .atas .waktu{color:#9aa8b5;font-size:14px;letter-spacing:.06em}
@@ -32,11 +32,10 @@ button.tipis:disabled{opacity:.45;cursor:default}
 @media (hover:none){.merek-raksasa{animation:sorot-jalan 7s ease-in-out infinite alternate}}
 @media (prefers-reduced-motion:reduce){.merek-raksasa{animation:none;--sorot-x:50%}}
 .atas-merek{border-bottom:1px solid #2a3642}
-.atas-merek .pendek{display:none}
-body:not(.utama) .atas-merek .tinggi{display:none}
-body:not(.utama) .atas-merek .pendek{display:block}
+/* di layar kerja merek raksasa disembunyikan supaya tabel dapat tempat (Joe: tampilan penuh layar) */
+body:not(.utama) .atas-merek{display:none}
 
-main{max-width:1200px;margin:24px auto 6vh;padding:0 16px}
+main{margin:24px 0 6vh;padding:0 24px}
 body.utama{min-height:calc(100vh / var(--skala));display:flex;flex-direction:column}
 body.utama main{flex:1;width:100%;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;justify-content:center}
 body.utama .modul{margin-top:0}
@@ -49,11 +48,8 @@ a.cab:hover{border-color:#6fb3d2}
 .cab .ket{margin-top:auto;padding-top:10px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em;width:100%}
 .modul{margin-top:24px}
 .modul .cab{min-height:200px;justify-content:center}
-.modul .cab .nama{font-size:clamp(28px,2.6vw,36px)}
-.modul .cab .nama.panjang{font-size:clamp(20px,1.8vw,26px)}
+.modul .cab .nama{font-size:clamp(22px,2vw,30px)}
 .pilih.modul{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
-.kembali{display:inline-block;margin-top:8px;color:#9aa8b5;text-decoration:none;letter-spacing:.06em;font-size:15px}
-.kembali:hover{color:#e6ecf1}
 
 /* tambahan untuk formulir dan tabel, memakai warna yang sama */
 .kartu{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:22px}
@@ -96,13 +92,42 @@ table.baris td.qty{width:150px}
 table.baris td.sub{width:170px}
 table.baris td.buang{width:1%}
 @media (max-width:699px){table.baris td.qty{width:92px}table.baris td.sub,table.baris th.sub{display:none}}
+/* menu tetap di atas: pindah modul tanpa kembali ke menu utama */
+.nav{display:flex;gap:6px;overflow-x:auto;padding:0 24px 10px}
+.nav a{white-space:nowrap;text-decoration:none;color:#9aa8b5;font-size:15px;font-weight:600;letter-spacing:.1em;padding:9px 18px;border:1px solid #2a3642;border-radius:999px}
+.nav a:hover{color:#e6ecf1;border-color:#6fb3d2}
+.nav a.kini{color:#11171d;background:#6fb3d2;border-color:#6fb3d2}
+/* formulir dan tabel berdampingan di layar lebar */
+.dua{display:grid;gap:24px;align-items:start}
+.dua>*{min-width:0}
+.dua h2:first-child{margin-top:0}
+@media (min-width:1100px){.dua{grid-template-columns:minmax(360px,460px) 1fr}.dua.rata{grid-template-columns:1fr 1fr}}
+.judul-cari{display:flex;gap:12px 20px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.judul-cari h2{margin:0}
+.judul-cari input{flex:1;min-width:220px}
+.saring{display:flex;gap:14px 16px;flex-wrap:wrap;align-items:end}
+.saring label{display:flex;flex-direction:column;gap:6px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em;width:200px}
+.saring label.cari{flex:1;min-width:260px;width:auto}
+.saring .ringkas{margin:0 0 0 auto}
+tbody tr:hover td{background:rgba(111,179,210,.07)}
+@media (min-width:700px){
+  body:not(.utama) .gulung{max-height:calc(100vh / var(--skala) - 215px);overflow:auto}
+  .gulung th{position:sticky;top:0;z-index:1}
+}
+/* stok sebagai petak: nama + angka besar, memenuhi layar */
+.pil{display:flex;gap:8px;flex-wrap:wrap}
+.pil button.kini{color:#11171d;background:#6fb3d2;border-color:#6fb3d2}
+.petak{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:10px}
+.ubin{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ubin b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ubin.nol b{color:#5f6e7b}
+.ubin.minus{border-color:#f0958a}
 [hidden]{display:none!important}
 </style></head>
 <body class="utama"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="derauMerek"><feTurbulence type="fractalNoise" baseFrequency="1" numOctaves="4" result="derau"/><feComposite in="SourceGraphic" in2="derau" operator="in"/></filter></svg>
-<header class="atas"><div class="bungkus"><div class="merek">STOK MENYAN</div><div class="kanan"><span class="waktu" id="waktu"></span><button class="tipis" id="tombolSegar" hidden>Update</button><button class="tipis" id="tombolKeluar" hidden>Keluar</button></div></div></header>
+<header class="atas"><div class="bungkus"><div class="merek">STOK MENYAN</div><div class="kanan"><span class="waktu" id="waktu"></span><button class="tipis" id="tombolSegar" hidden>Update</button><button class="tipis" id="tombolKeluar" hidden>Keluar</button></div></div><nav class="nav" id="nav" hidden></nav></header>
 <div class="atas-merek"><div class="merek-raksasa" aria-hidden="true">
 <svg class="tinggi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2468.89 566.93" fill="currentColor"><text x="0" y="546" font-size="760" textLength="2468.89" lengthAdjust="spacingAndGlyphs" filter="url(#derauMerek)">STOK MENYAN</text></svg>
-<svg class="pendek" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2468.89 283.47" preserveAspectRatio="none" fill="currentColor"><text x="0" y="273" font-size="380" textLength="2468.89" lengthAdjust="spacingAndGlyphs" filter="url(#derauMerek)">STOK MENYAN</text></svg>
 </div></div>
 <main id="isi"></main>
 <datalist id="pilihBarang"></datalist><datalist id="pilihPelanggan"></datalist>
@@ -140,6 +165,7 @@ const MODUL = [
   ["laporan", "LAPORAN", "Riwayat, saldo, unduh Excel"],
 ];
 const BARIS_AWAL = 5;
+document.getElementById("nav").innerHTML = '<a href="#">Menu</a>' + MODUL.map(([k, n]) => `<a href="#${k}">${n}</a>`).join("");
 const isi = document.getElementById("isi");
 let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" };
 try { sesi = JSON.parse(localStorage.getItem(SIMPAN)); } catch (e) { sesi = null; }
@@ -197,7 +223,7 @@ function duaKali(tombol, jalankan) {
 // ---------- layar ----------
 function layarMasuk(siap) {
   document.body.className = "utama";
-  el("tombolSegar").hidden = el("tombolKeluar").hidden = true;
+  el("tombolSegar").hidden = el("tombolKeluar").hidden = el("nav").hidden = true;
   el("waktu").textContent = "";
   if (!siap) { isi.innerHTML = '<div class="kartu sempit"><h2 style="margin-top:0">Belum bisa dipakai</h2><div>Sandi belum diatur. Hubungi Joe.</div></div>'; return; }
   isi.innerHTML = `<form class="kartu sempit" id="formMasuk"><h2 style="margin-top:0">Masuk</h2>
@@ -218,9 +244,9 @@ function layarMasuk(siap) {
 function layarMenu() {
   document.body.className = "utama";
   isi.innerHTML = '<div class="pilih modul">' + MODUL.map(([k, n, ket]) =>
-    `<a class="cab" href="#${k}"><div class="nama${n.length > 8 ? " panjang" : ""}">${n}</div><div class="ket">${ket}</div></a>`).join("") + "</div>";
+    `<a class="cab" href="#${k}"><div class="nama">${n}</div><div class="ket">${ket}</div></a>`).join("") + "</div>";
 }
-const kepalaModul = k => `<a class="kembali" href="#">‹ Menu utama</a><h2>${MODUL.find(x => x[0] === k)[1]}</h2>`;
+const kepalaModul = k => `<h2 style="margin-top:0">${MODUL.find(x => x[0] === k)[1]}</h2>`;
 function pasangCari(idMasukan) {
   el(idMasukan).addEventListener("input", e => {
     const kata = kunci(e.target.value);
@@ -240,13 +266,12 @@ function layarMaster(jenis) {
     (brg ? `<td class="angka">${angka(x.harga)}</td>` : "") +
     `<td>${x.aktif ? "Aktif" : "Tidak dipakai"}</td><td class="aksi"><button class="tipis" data-ubah="${x.id}">Edit</button><button class="tipis" data-aktif="${x.id}">${x.aktif ? "Nonaktifkan" : "Aktifkan"}</button><button class="tipis" data-hapus="${x.id}">Hapus</button></td></tr>`).join("");
   const sebut = brg ? "barang" : "pelanggan";
-  isi.innerHTML = kepalaModul(jenis) + `<form class="kartu" id="formMaster"><div class="isian">${kolom}</div>
+  isi.innerHTML = `<div class="dua"><div>${kepalaModul(jenis)}<form class="kartu" id="formMaster"><div class="isian">${kolom}</div>
     <div class="tombol"><button class="utama" type="submit">${kini ? "Simpan perubahan" : "Tambah " + sebut}</button>${kini ? '<button class="tipis" type="button" id="fBatal">Tidak jadi</button>' : ""}</div>
-    <div class="pesan" id="fPesan"></div></form>
-    <h2>Daftar ${sebut} (${daftar.length})</h2>
-    <div class="isian" style="margin-bottom:12px"><label class="lebar">Pencarian<input id="fCari" autocomplete="off" placeholder="Ketik sebagian nama"></label></div>
+    <div class="pesan" id="fPesan"></div></form></div>
+    <div><div class="judul-cari"><h2>Daftar ${sebut} (${daftar.length})</h2><input id="fCari" autocomplete="off" placeholder="Cari nama ${sebut}"></div>
     <div class="gulung" id="tabelUtama">${daftar.length ? `<table><thead><tr><th>Nama ${sebut}</th>${brg ? '<th class="angka">Harga per 1 barang</th>' : ""}<th>Status</th><th></th></tr></thead><tbody>${baris}</tbody></table>`
-      : `<div class="kosong">Belum ada ${sebut}. Tambahkan lewat isian di atas.</div>`}</div>`;
+      : `<div class="kosong">Belum ada ${sebut}. Tambahkan lewat isian.</div>`}</div></div></div>`;
   const kirim = async (jalur, badan, berhasil) => {
     try { await panggil(jalur, badan); ubah = null; await muat(); layarMaster(jenis); pesan("fPesan", berhasil, true); }
     catch (g) { pesan("fPesan", g.message); }
@@ -278,13 +303,26 @@ function layarMaster(jenis) {
 
 function layarStok() {
   const daftar = data.barang.filter(b => b.aktif || b.stok !== 0);
-  isi.innerHTML = kepalaModul("stok") + `
-    <div class="isian" style="margin-bottom:12px"><label class="lebar">Pencarian<input id="sCari" autocomplete="off" placeholder="Ketik sebagian nama barang"></label></div>
-    <div class="gulung" id="tabelUtama">${daftar.length ? `<table><thead><tr><th>Nama barang</th><th class="angka">Stok tersedia</th></tr></thead><tbody>${
-      daftar.map(b => `<tr><td>${aman(b.nama)}</td><td class="angka ${b.stok < 0 ? "minus" : ""}"><b>${angka(b.stok)}</b></td></tr>`).join("")
-    }</tbody></table>` : '<div class="kosong">Belum ada barang.</div>'}</div>
+  const jenisStok = b => b.stok < 0 ? "minus" : b.stok === 0 ? "nol" : "ada";
+  const hitung = j => daftar.filter(b => jenisStok(b) === j).length;
+  const pil = [["", "Semua", daftar.length], ["ada", "Ada stok", hitung("ada")], ["nol", "Kosong", hitung("nol")], ["minus", "Minus", hitung("minus")]];
+  isi.innerHTML = `<div class="judul-cari">${kepalaModul("stok")}<input id="sCari" autocomplete="off" placeholder="Cari nama barang">
+      <div class="pil">${pil.map(([k, n, jml], i) => `<button class="tipis${i ? "" : " kini"}" data-pil="${k}">${n} (${jml})</button>`).join("")}</div></div>
+    ${daftar.length ? `<div class="petak">${daftar.map(b => `<div class="ubin ${jenisStok(b)}" data-jenis="${jenisStok(b)}"><span>${aman(b.nama)}</span><b class="${b.stok < 0 ? "minus" : ""}">${angka(b.stok)}</b></div>`).join("")}</div>`
+      : '<div class="kartu">Belum ada barang.</div>'}
     <div class="catatan">Stok tersedia = semua barang masuk dikurangi semua barang keluar. Angka merah berarti minus.</div>`;
-  pasangCari("sCari");
+  let pilih = "";
+  const saringStok = () => {
+    const kata = kunci(el("sCari").value);
+    isi.querySelectorAll(".ubin").forEach(u => { u.hidden = (!!pilih && u.dataset.jenis !== pilih) || (!!kata && !u.textContent.toLowerCase().includes(kata)); });
+  };
+  el("sCari").addEventListener("input", saringStok);
+  isi.querySelectorAll("[data-pil]").forEach(t => t.addEventListener("click", () => {
+    pilih = t.dataset.pil;
+    isi.querySelectorAll("[data-pil]").forEach(x => x.classList.toggle("kini", x === t));
+    saringStok();
+  }));
+  el("sCari").focus();
 }
 
 function tabelLaporan(baris, kosong) {
@@ -312,14 +350,14 @@ async function layarCatat(jenis, kabar) {
   const barisIsian = () => `<tr><td><input class="bNama besar" list="pilihBarang" autocomplete="off" placeholder="Ketik nama barang"></td>
     <td class="qty"><input class="bQty" inputmode="decimal" autocomplete="off" placeholder="0"></td>${keluar ? '<td class="sub angka"></td>' : ""}
     <td class="buang"><button class="tipis" type="button" data-buang tabindex="-1" aria-label="Buang baris">×</button></td></tr>`;
-  isi.innerHTML = kepalaModul(jenis) + (kurang ? `<div class="kartu">${kurang}</div>` : `<form class="kartu" id="formCatat">
+  isi.innerHTML = `<div class="dua rata"><div>${kepalaModul(jenis)}` + (kurang ? `<div class="kartu">${kurang}</div>` : `<form class="kartu" id="formCatat">
       <div class="isian">${keluar ? '<label>Pelanggan / peti<input id="cPelanggan" list="pilihPelanggan" required autocomplete="off" placeholder="Ketik nama pelanggan"></label>' : ""}
       <label>Tanggal<input id="cTanggal" type="date" required max="${data.hari_ini}" value="${data.hari_ini}"></label></div>
       <table class="baris" style="margin-top:14px"><thead><tr><th>Nama barang</th><th>Qty</th>${keluar ? '<th class="sub angka">Harga</th>' : ""}<th></th></tr></thead><tbody id="cBaris">${barisIsian().repeat(BARIS_AWAL)}</tbody></table>
       <div class="tombol" style="margin-top:8px"><button class="tipis" type="button" id="cTambah">+ Tambah baris</button>${keluar ? '<span class="ringkas" style="margin:0 0 0 auto"><span>Total harga</span><b id="cTotal">0</b></span>' : ""}</div>
       <div class="tombol"><button class="utama" type="submit">Simpan barang ${jenis}</button></div><div class="pesan" id="cPesan"></div>
       ${keluar ? "" : '<div class="catatan">Qty boleh minus untuk koreksi stok, contoh: -19,5</div>'}</form>`) +
-    `<h2>30 baris barang ${jenis} terakhir</h2><div class="pesan" id="rPesan" style="margin-top:0"></div>` + tabelLaporan(terakhir, `Belum ada catatan barang ${jenis}.`);
+    `</div><div><h2>30 baris barang ${jenis} terakhir</h2><div class="pesan" id="rPesan" style="margin-top:0"></div>` + tabelLaporan(terakhir, `Belum ada catatan barang ${jenis}.`) + "</div></div>";
   pasangHapusBaris(() => layarCatat(jenis), "rPesan");
   if (kurang) return;
   if (kabar) pesan("cPesan", kabar, true);
@@ -389,14 +427,13 @@ async function layarLaporan(kabar) {
   const tanya = "laporan?dari=" + saring.dari + "&sampai=" + saring.sampai;
   const { baris, penuh } = await panggil(tanya);
   isi.innerHTML = kepalaModul("laporan") + `
-    <div class="kartu"><div class="isian">
-      <label class="lebar">Pencarian<input id="lCari" autocomplete="off" placeholder="Nama pelanggan, nama barang, atau tanggal"></label>
+    <div class="kartu" style="margin-bottom:16px"><div class="saring">
+      <label class="cari">Pencarian<input id="lCari" autocomplete="off" placeholder="Nama pelanggan, nama barang, atau tanggal"></label>
       <label>Dari tanggal<input id="lDari" type="date" value="${saring.dari}"></label>
-      <label>Sampai tanggal<input id="lSampai" type="date" value="${saring.sampai}"></label></div>
-      <div class="tombol"><button class="utama" id="lTampil">Tampilkan</button><button class="tipis" id="lSemua">Semua tanggal</button><button class="tipis" id="lUnduh">Unduh Excel</button></div>
-      <div class="ringkas"><span>Saldo</span><b id="lSaldo">0</b><span id="lJumlah"></span></div>
-      <div class="pesan" id="lPesan"></div></div>
-    <h2>Laporan</h2>` + tabelLaporan(baris, "Tidak ada catatan pada tanggal ini.") +
+      <label>Sampai tanggal<input id="lSampai" type="date" value="${saring.sampai}"></label>
+      <button class="utama" id="lTampil">Tampilkan</button><button class="tipis" id="lSemua">Semua tanggal</button><button class="tipis" id="lUnduh">Unduh Excel</button>
+      <div class="ringkas"><span>Saldo</span><b id="lSaldo">0</b><span id="lJumlah"></span></div></div>
+      <div class="pesan" id="lPesan"></div></div>` + tabelLaporan(baris, "Tidak ada catatan pada tanggal ini.") +
     (penuh ? '<div class="catatan">Hanya 5.000 baris terbaru yang ditampilkan. Persempit tanggal, atau pakai Unduh Excel untuk semua baris.</div>' : "") +
     '<div class="catatan">Saldo = jumlah kolom Harga dari baris yang sedang tampil. Baris terbaru di atas.</div>';
   if (kabar) pesan("lPesan", kabar, true);
@@ -437,8 +474,10 @@ async function tampil() {
   if (k !== "laporan") saring = { dari: "", sampai: "" };
   try {
     await muat();
-    el("tombolSegar").hidden = el("tombolKeluar").hidden = false;
-    if (!MODUL.some(m => m[0] === k)) return layarMenu();
+    el("tombolSegar").hidden = el("tombolKeluar").hidden = el("nav").hidden = false;
+    const modulKini = MODUL.some(m => m[0] === k) ? k : "";
+    el("nav").querySelectorAll("a").forEach(a => a.classList.toggle("kini", a.getAttribute("href") === "#" + modulKini));
+    if (!modulKini) return layarMenu();
     document.body.className = "";
     window.scrollTo(0, 0);
     if (k === "barang" || k === "pelanggan") layarMaster(k);

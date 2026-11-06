@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Stok Menyan</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&family=Archivo:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* Tema = Dashboard Svarna (otomasi/susun_induk.py): warna, huruf, kotak menu, merek raksasa, skala 75% di laptop */
+:root{color-scheme:dark}
+body{margin:0;background:#11171d;color:#e6ecf1;font:19px/1.45 "Aptos Narrow","Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  text-transform:uppercase;letter-spacing:.03em;-webkit-font-smoothing:antialiased}
+:root{--skala:1}
+@media (min-width:700px){html{zoom:.75}:root{--skala:.75}}
+
+.atas{position:sticky;top:0;z-index:9;background:#11171d;border-bottom:1px solid #2a3642}
+.atas .bungkus{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap}
+.atas .merek{font-weight:600;font-size:24px;letter-spacing:.3em}
+.atas .kanan{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:8px}
+.atas .waktu{color:#9aa8b5;font-size:14px;letter-spacing:.06em}
+button.tipis{font:inherit;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#e6ecf1;background:none;cursor:pointer;
+  border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 18px}
+button.tipis:hover{border-color:#e6ecf1;background:rgba(255,255,255,.06)}
+button.tipis:disabled{opacity:.45;cursor:default}
+@property --sorot-x{syntax:"<percentage>";inherits:true;initial-value:0%}
+.merek-raksasa{width:100%;color:#e6ecf1;user-select:none;
+  -webkit-mask-image:radial-gradient(circle at var(--sorot-x) 50%,#000 0%,transparent 60%);
+  mask-image:radial-gradient(circle at var(--sorot-x) 50%,#000 0%,transparent 60%)}
+.merek-raksasa svg{display:block;width:100%;height:auto;opacity:.4}
+.merek-raksasa text{font-family:"Archivo","Arial Black",sans-serif;font-weight:800}
+@keyframes sorot-jalan{from{--sorot-x:0%}to{--sorot-x:100%}}
+@media (hover:none){.merek-raksasa{animation:sorot-jalan 7s ease-in-out infinite alternate}}
+@media (prefers-reduced-motion:reduce){.merek-raksasa{animation:none;--sorot-x:50%}}
+.atas-merek{border-bottom:1px solid #2a3642}
+.atas-merek .pendek{display:none}
+body:not(.utama) .atas-merek .tinggi{display:none}
+body:not(.utama) .atas-merek .pendek{display:block}
+
+main{max-width:1200px;margin:24px auto 6vh;padding:0 16px}
+body.utama{min-height:calc(100vh / var(--skala));display:flex;flex-direction:column}
+body.utama main{flex:1;width:100%;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;justify-content:center}
+body.utama .modul{margin-top:0}
+h2{font-size:16px;letter-spacing:.3em;color:#6fb3d2;margin:24px 0 10px}
+.pilih{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
+.cab{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:24px 22px 20px;color:#e6ecf1;
+  min-height:150px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;text-decoration:none}
+a.cab:hover{border-color:#6fb3d2}
+.cab .nama{font-weight:600;font-size:clamp(26px,2.6vw,34px);line-height:1.1;letter-spacing:.04em}
+.cab .ket{margin-top:auto;padding-top:10px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em;width:100%}
+.modul{margin-top:24px}
+.modul .cab{min-height:200px;justify-content:center}
+.modul .cab .nama{font-size:clamp(28px,2.6vw,36px)}
+.pilih.modul{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.kembali{display:inline-block;margin-top:8px;color:#9aa8b5;text-decoration:none;letter-spacing:.06em;font-size:15px}
+.kembali:hover{color:#e6ecf1}
+
+/* tambahan untuk formulir dan tabel, memakai warna yang sama */
+.kartu{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:22px}
+.isian{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px 16px;align-items:end}
+.isian label{display:flex;flex-direction:column;gap:6px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em}
+.isian .lebar{grid-column:1/-1}
+input,select{font:inherit;font-size:19px;text-transform:none;letter-spacing:.02em;color:#e6ecf1;background:#11171d;border:1px solid #2a3642;
+  border-radius:6px;padding:12px 14px;min-width:0;width:100%;box-sizing:border-box}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid #6fb3d2;outline-offset:1px}
+input::placeholder{color:#5f6e7b}
+input.besar{text-transform:uppercase}
+.tombol{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+button.utama{font:inherit;font-size:17px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#11171d;background:#6fb3d2;
+  border:1px solid #6fb3d2;border-radius:999px;padding:12px 28px;cursor:pointer}
+button.utama:hover{background:#8cc6e0}
+button.utama:disabled{opacity:.5;cursor:default}
+.pesan{min-height:1.45em;font-size:16px;letter-spacing:.05em;margin-top:12px}
+.pesan.baik{color:#7fd0a0}.pesan.buruk{color:#f0958a}
+.gulung{overflow-x:auto;border:1px solid #2a3642;border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:17px}
+th,td{padding:11px 14px;border-bottom:1px solid #2a3642;text-align:left;vertical-align:top}
+th{color:#9aa8b5;font-size:13px;font-weight:600;letter-spacing:.12em;background:#18212a;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.angka,th.angka{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.aksi{white-space:nowrap;text-align:right}
+td.aksi button{padding:6px 14px;font-size:13px;margin-left:6px}
+tr.redup td{color:#5f6e7b}
+tr.redup td.nilai{text-decoration:line-through}
+.tanda{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.12em;border:1px solid;border-radius:999px;padding:2px 10px}
+.tanda.masuk{color:#7fd0a0}.tanda.keluar{color:#e8b56c}.tanda.batal{color:#f0958a}
+.kosong{color:#9aa8b5;padding:18px 14px}
+.sempit{max-width:460px;margin:0 auto;width:100%}
+.catatan{color:#9aa8b5;font-size:14px;letter-spacing:.06em;margin-top:10px}
+.lapis{position:fixed;inset:0;z-index:20;background:rgba(8,12,16,.78);display:flex;align-items:center;justify-content:center;padding:16px}
+.lapis .kartu{max-width:520px;width:100%}
+[hidden]{display:none!important}
+</style></head>
+<body class="utama"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="derauMerek"><feTurbulence type="fractalNoise" baseFrequency="1" numOctaves="4" result="derau"/><feComposite in="SourceGraphic" in2="derau" operator="in"/></filter></svg>
+<header class="atas"><div class="bungkus"><div class="merek">STOK MENYAN</div><div class="kanan"><span class="waktu" id="waktu"></span><button class="tipis" id="tombolSegar" hidden>Update</button><button class="tipis" id="tombolKeluar" hidden>Keluar</button></div></div></header>
+<div class="atas-merek"><div class="merek-raksasa" aria-hidden="true">
+<svg class="tinggi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2468.89 566.93" fill="currentColor"><text x="0" y="546" font-size="760" textLength="2468.89" lengthAdjust="spacingAndGlyphs" filter="url(#derauMerek)">STOK MENYAN</text></svg>
+<svg class="pendek" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2468.89 283.47" preserveAspectRatio="none" fill="currentColor"><text x="0" y="273" font-size="380" textLength="2468.89" lengthAdjust="spacingAndGlyphs" filter="url(#derauMerek)">STOK MENYAN</text></svg>
+</div></div>
+<main id="isi"></main>
+
+<div class="lapis" id="lapisBatal" hidden><form class="kartu" id="formBatal">
+  <h2 style="margin-top:0">Batalkan catatan</h2>
+  <div id="batalRincian" class="catatan" style="margin:0 0 14px"></div>
+  <div class="isian"><label class="lebar">Alasan dibatalkan<input id="batalAlasan" maxlength="200" required autocomplete="off"></label></div>
+  <div class="tombol"><button class="utama" type="submit">Batalkan catatan</button><button class="tipis" type="button" id="batalTutup">Tidak jadi</button></div>
+  <div class="pesan buruk" id="batalPesan"></div>
+</form></div>
+
+<script>
+"use strict";
+// sorot merek raksasa mengikuti tetikus (sama dengan Dashboard Svarna)
+let mouseX = null, sorotKini = 0;
+document.addEventListener("mousemove", e => { mouseX = e.clientX; });
+(function gerakSorot() {
+  if (mouseX !== null) {
+    for (const el of document.querySelectorAll(".merek-raksasa")) {
+      const r = el.getBoundingClientRect();
+      if (!r.width) continue;
+      const tujuan = Math.min(100, Math.max(0, (mouseX - r.left) / r.width * 100));
+      sorotKini += (tujuan - sorotKini) * .12;
+      el.style.setProperty("--sorot-x", sorotKini.toFixed(2) + "%");
+    }
+  }
+  requestAnimationFrame(gerakSorot);
+})();
+
+// Halaman di GitHub Pages memanggil layanan di Mac Winros lewat Funnel; bila dibuka langsung dari layanan, pakai alamat yang sama.
+const API = location.hostname.endsWith("github.io")
+  ? "https://svarna5s-mac-mini.tail7a15d8.ts.net:10000/stok-menyan/api/"
+  : location.pathname.replace(/[^/]*$/, "") + "api/";
+const SIMPAN = "stokMenyanSesi";
+const MODUL = [
+  ["pelanggan", "MASTER PELANGGAN", "Daftar pelanggan"],
+  ["barang", "MASTER BARANG", "Daftar barang dan satuan"],
+  ["masuk", "BARANG MASUK", "Catat barang datang"],
+  ["keluar", "BARANG KELUAR", "Catat barang ke pelanggan"],
+  ["laporan", "LAPORAN", "Stok, riwayat, unduh Excel"],
+];
+const isi = document.getElementById("isi");
+let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" };
+try { sesi = JSON.parse(localStorage.getItem(SIMPAN)); } catch (e) { sesi = null; }
+
+const aman = t => String(t ?? "").replace(/[&<>"']/g, h => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[h]));
+const angka = n => Number(n).toLocaleString("id-ID", { maximumFractionDigits: 3 });
+const tgl = t => t ? t.slice(8, 10) + "-" + t.slice(5, 7) + "-" + t.slice(0, 4) : "";
+const el = id => document.getElementById(id);
+
+class Galat extends Error { constructor(kode, pesan) { super(pesan); this.kode = kode; } }
+async function panggil(jalur, badan) {
+  const kepala = {};
+  if (sesi) kepala.Authorization = "Bearer " + sesi.token;
+  if (badan) kepala["Content-Type"] = "application/json";
+  let jawab;
+  try {
+    jawab = await fetch(API + jalur, { method: badan ? "POST" : "GET", headers: kepala, body: badan ? JSON.stringify(badan) : undefined, cache: "no-store" });
+  } catch (e) {
+    throw new Galat(0, "Tidak tersambung ke server. Periksa internet, lalu coba lagi.");
+  }
+  if (jalur.startsWith("unduh") && jawab.ok) return jawab;
+  let hasil = {};
+  try { hasil = await jawab.json(); } catch (e) { /* jawaban bukan JSON */ }
+  if (!jawab.ok) {
+    if (jawab.status === 401 && sesi && jalur !== "masuk") { lupaSesi(); tampil(); }
+    throw new Galat(jawab.status, hasil.galat || "Server menjawab " + jawab.status + ".");
+  }
+  return hasil;
+}
+function lupaSesi() { sesi = null; data = null; try { localStorage.removeItem(SIMPAN); } catch (e) { /* penyimpanan diblokir */ } }
+function pesan(id, teks, baik) { const p = el(id); if (!p) return; p.textContent = teks; p.className = "pesan " + (baik ? "baik" : "buruk"); }
+
+async function muat() {
+  const tanya = saring.dari || saring.sampai ? "?dari=" + saring.dari + "&sampai=" + saring.sampai : "";
+  data = await panggil("data" + tanya);
+  el("waktu").textContent = "DATA " + tgl(data.waktu.slice(0, 10)) + " " + data.waktu.slice(11, 16).replace(":", ".") + " · " + data.pengisi;
+}
+
+// ---------- layar ----------
+function layarMasuk(siap) {
+  document.body.className = "utama";
+  el("tombolSegar").hidden = el("tombolKeluar").hidden = true;
+  el("waktu").textContent = "";
+  if (!siap) { isi.innerHTML = '<div class="kartu sempit"><h2 style="margin-top:0">Belum bisa dipakai</h2><div>Sandi belum diatur. Hubungi Joe.</div></div>'; return; }
+  isi.innerHTML = `<form class="kartu sempit" id="formMasuk"><h2 style="margin-top:0">Masuk</h2>
+    <div class="isian"><label class="lebar">Nama pengisi<input id="mNama" maxlength="40" required autocomplete="name"></label>
+    <label class="lebar">Sandi<input id="mSandi" type="password" maxlength="200" required autocomplete="current-password"></label></div>
+    <div class="tombol"><button class="utama" type="submit">Masuk</button></div><div class="pesan" id="mPesan"></div></form>`;
+  el("formMasuk").addEventListener("submit", async e => {
+    e.preventDefault();
+    const tombol = e.target.querySelector("button"); tombol.disabled = true;
+    try {
+      sesi = await panggil("masuk", { nama: el("mNama").value, sandi: el("mSandi").value });
+      try { localStorage.setItem(SIMPAN, JSON.stringify(sesi)); } catch (e2) { /* tetap jalan tanpa disimpan */ }
+      await tampil();
+    } catch (g) { sesi = null; pesan("mPesan", g.message); tombol.disabled = false; }
+  });
+  el("mNama").focus();
+}
+
+function layarMenu() {
+  document.body.className = "utama";
+  isi.innerHTML = '<div class="pilih modul">' + MODUL.map(([k, n, ket]) =>
+    `<a class="cab" href="#${k}"><div class="nama">${n}</div><div class="ket">${ket}</div></a>`).join("") + "</div>";
+}
+
+function kepalaModul(kunci) {
+  const m = MODUL.find(x => x[0] === kunci);
+  return `<a class="kembali" href="#">‹ Menu utama</a><h2>${m[1]}</h2>`;
+}
+
+function layarMaster(jenis) {
+  const pel = jenis === "pelanggan";
+  const daftar = pel ? data.pelanggan : data.barang;
+  const kini = ubah && ubah.jenis === jenis ? daftar.find(x => x.id === ubah.id) : null;
+  const kolom = pel
+    ? `<label>Nama pelanggan<input id="fNama" maxlength="80" required value="${aman(kini?.nama)}"></label>
+       <label>Kontak (boleh kosong)<input id="fKontak" maxlength="40" value="${aman(kini?.kontak)}"></label>
+       <label class="lebar">Alamat (boleh kosong)<input id="fAlamat" maxlength="200" value="${aman(kini?.alamat)}"></label>`
+    : `<label>Nama barang<input id="fNama" class="besar" maxlength="80" required value="${aman(kini?.nama)}"></label>
+       <label>Satuan<input id="fSatuan" class="besar" maxlength="20" required value="${aman(kini?.satuan ?? "KG")}"></label>`;
+  const baris = daftar.map(x => `<tr class="${x.aktif ? "" : "redup"}"><td>${aman(x.nama)}</td>` + (pel
+      ? `<td>${aman(x.kontak)}</td><td>${aman(x.alamat)}</td><td class="angka">${angka(x.kali)}</td>`
+      : `<td>${aman(x.satuan)}</td><td class="angka">${angka(x.stok)}</td>`) +
+    `<td>${x.aktif ? "Aktif" : "Tidak dipakai"}</td><td class="aksi"><button class="tipis" data-ubah="${x.id}">Ubah</button><button class="tipis" data-aktif="${x.id}">${x.aktif ? "Nonaktifkan" : "Aktifkan"}</button><button class="tipis" data-hapus="${x.id}">Hapus</button></td></tr>`).join("");
+  isi.innerHTML = kepalaModul(jenis) + `<form class="kartu" id="formMaster"><div class="isian">${kolom}</div>
+    <div class="tombol"><button class="utama" type="submit">${kini ? "Simpan perubahan" : "Tambah"}</button>${kini ? '<button class="tipis" type="button" id="fBatal">Tidak jadi</button>' : ""}</div>
+    <div class="pesan" id="fPesan"></div></form>
+    <h2>Daftar ${pel ? "pelanggan" : "barang"} (${daftar.length})</h2>
+    <div class="isian" style="margin-bottom:12px"><label class="lebar">Cari nama<input id="fCari" autocomplete="off" placeholder="Ketik sebagian nama"></label></div>
+    <div class="gulung">${daftar.length ? `<table><thead><tr><th>Nama</th>${pel ? '<th>Kontak</th><th>Alamat</th><th class="angka">Barang keluar (kali)</th>' : '<th>Satuan</th><th class="angka">Stok</th>'}<th>Status</th><th></th></tr></thead><tbody>${baris}</tbody></table>`
+      : `<div class="kosong">Belum ada ${pel ? "pelanggan" : "barang"}. Tambahkan lewat isian di atas.</div>`}</div>`;
+  const kirim = async (jalur, badan, berhasil) => {
+    try { await panggil(jalur, badan); ubah = null; await muat(); layarMaster(jenis); pesan("fPesan", berhasil, true); }
+    catch (g) { pesan("fPesan", g.message); }
+  };
+  const badanDari = (x, aktif) => pel ? { id: x.id, nama: x.nama, kontak: x.kontak, alamat: x.alamat, aktif } : { id: x.id, nama: x.nama, satuan: x.satuan, aktif };
+  el("formMaster").addEventListener("submit", e => {
+    e.preventDefault();
+    const badan = pel ? { nama: el("fNama").value, kontak: el("fKontak").value, alamat: el("fAlamat").value } : { nama: el("fNama").value, satuan: el("fSatuan").value };
+    if (kini) kirim(jenis + "/ubah", { ...badan, id: kini.id, aktif: kini.aktif }, "Perubahan tersimpan.");
+    else kirim(jenis, badan, "Tersimpan: " + badan.nama.trim());
+  });
+  if (kini) el("fBatal").addEventListener("click", () => { ubah = null; layarMaster(jenis); });
+  el("fCari").addEventListener("input", e => {
+    const kata = e.target.value.trim().toLowerCase();
+    isi.querySelectorAll("tbody tr").forEach(b => { b.hidden = !!kata && !b.firstElementChild.textContent.toLowerCase().includes(kata); });
+  });
+  isi.querySelectorAll("[data-ubah]").forEach(t => t.addEventListener("click", () => { ubah = { jenis, id: +t.dataset.ubah }; layarMaster(jenis); el("fNama").focus(); }));
+  isi.querySelectorAll("[data-aktif]").forEach(t => t.addEventListener("click", () => {
+    const x = daftar.find(y => y.id === +t.dataset.aktif);
+    kirim(jenis + "/ubah", badanDari(x, !x.aktif), x.nama + (x.aktif ? " dinonaktifkan." : " diaktifkan lagi."));
+  }));
+  // hapus perlu dua kali tekan supaya tidak terhapus karena salah sentuh
+  isi.querySelectorAll("[data-hapus]").forEach(t => t.addEventListener("click", () => {
+    const x = daftar.find(y => y.id === +t.dataset.hapus);
+    if (t.dataset.yakin) return kirim(jenis + "/hapus", { id: x.id }, x.nama + " dihapus.");
+    t.dataset.yakin = "1"; t.textContent = "Yakin hapus?"; t.style.borderColor = t.style.color = "#f0958a";
+    setTimeout(() => { if (t.isConnected) { delete t.dataset.yakin; t.textContent = "Hapus"; t.style.borderColor = t.style.color = ""; } }, 4000);
+  }));
+}
+
+function barisRiwayat(daftar, pakaiJenis) {
+  return daftar.map(t => `<tr class="${t.batal ? "redup" : ""}"><td>${tgl(t.tanggal)}</td>` +
+    (pakaiJenis ? `<td><span class="tanda ${t.batal ? "batal" : t.jenis}">${t.batal ? "Batal" : t.jenis}</span></td>` : "") +
+    `<td>${aman(t.barang)}</td><td class="angka nilai">${angka(t.jumlah)} ${aman(t.satuan)}</td><td>${aman(t.pelanggan)}</td>` +
+    `<td>${aman(t.keterangan)}${t.batal ? `<div class="catatan">Dibatalkan ${aman(t.batal_oleh)}: ${aman(t.batal_alasan)}</div>` : ""}</td><td>${aman(t.pengisi)}</td>` +
+    `<td class="aksi">${t.batal ? (pakaiJenis ? "" : '<span class="tanda batal">Batal</span>') : `<button class="tipis" data-batal="${t.id}">Batalkan</button>`}</td></tr>`).join("");
+}
+function tabelRiwayat(daftar, pakaiJenis, kosong) {
+  if (!daftar.length) return `<div class="gulung"><div class="kosong">${kosong}</div></div>`;
+  return `<div class="gulung"><table><thead><tr><th>Tanggal</th>${pakaiJenis ? "<th>Jenis</th>" : ""}<th>Barang</th><th class="angka">Jumlah</th><th>Pelanggan</th><th>Keterangan</th><th>Pengisi</th><th></th></tr></thead><tbody>${barisRiwayat(daftar, pakaiJenis)}</tbody></table></div>`;
+}
+function pasangBatal(layar) {
+  isi.querySelectorAll("[data-batal]").forEach(t => t.addEventListener("click", () => {
+    const x = data.riwayat.find(y => y.id === +t.dataset.batal);
+    el("batalRincian").textContent = `${x.jenis} ${tgl(x.tanggal)} · ${x.barang} · ${angka(x.jumlah)} ${x.satuan}` + (x.pelanggan ? " · " + x.pelanggan : "");
+    el("batalAlasan").value = ""; el("batalPesan").textContent = "";
+    el("lapisBatal").hidden = false; el("batalAlasan").focus();
+    el("formBatal").onsubmit = async e => {
+      e.preventDefault();
+      try { await panggil("batal", { id: x.id, alasan: el("batalAlasan").value }); el("lapisBatal").hidden = true; await muat(); layar(); }
+      catch (g) { el("batalPesan").textContent = g.message; }
+    };
+  }));
+}
+el("batalTutup").addEventListener("click", () => { el("lapisBatal").hidden = true; });
+
+function layarCatat(jenis) {
+  const keluar = jenis === "keluar";
+  const barang = data.barang.filter(b => b.aktif), pelanggan = data.pelanggan.filter(p => p.aktif);
+  const kurang = !barang.length ? 'Belum ada barang. Isi dulu <a href="#barang" style="color:#6fb3d2">Master Barang</a>.'
+    : keluar && !pelanggan.length ? 'Belum ada pelanggan. Isi dulu <a href="#pelanggan" style="color:#6fb3d2">Master Pelanggan</a>.' : "";
+  const terakhir = data.riwayat.filter(t => t.jenis === jenis).slice(0, 30);
+  isi.innerHTML = kepalaModul(jenis) + (kurang ? `<div class="kartu">${kurang}</div>` : `<form class="kartu" id="formCatat"><div class="isian">
+      <label>Tanggal<input id="cTanggal" type="date" required max="${data.hari_ini}" value="${data.hari_ini}"></label>
+      ${keluar ? `<label>Pelanggan<select id="cPelanggan" required><option value="">Pilih pelanggan</option>${pelanggan.map(p => `<option value="${p.id}">${aman(p.nama)}</option>`).join("")}</select></label>` : ""}
+      <label>Cari barang (boleh kosong)<input id="cCari" autocomplete="off" placeholder="Ketik sebagian nama"></label>
+      <label>Barang<select id="cBarang" required><option value="">Pilih barang</option>${barang.map(b => `<option value="${b.id}">${aman(b.nama)} (stok ${angka(b.stok)} ${aman(b.satuan)})</option>`).join("")}</select></label>
+      <label>Jumlah<input id="cJumlah" inputmode="decimal" required placeholder="0" autocomplete="off"></label>
+      <label class="lebar">${keluar ? "Keterangan (boleh kosong)" : "Keterangan: dari siapa, nomor nota (boleh kosong)"}<input id="cKet" maxlength="200" autocomplete="off"></label></div>
+      <div class="tombol"><button class="utama" type="submit">Simpan barang ${jenis}</button></div><div class="pesan" id="cPesan"></div></form>`) +
+    `<h2>30 catatan barang ${jenis} terakhir</h2>` + tabelRiwayat(terakhir, false, `Belum ada catatan barang ${jenis}.`);
+  pasangBatal(() => layarCatat(jenis));
+  if (kurang) return;
+  const pilihanBarang = b => `<option value="${b.id}">${aman(b.nama)} (stok ${angka(b.stok)} ${aman(b.satuan)})</option>`;
+  el("cCari").addEventListener("input", e => {
+    const kata = e.target.value.trim().toLowerCase(), cocok = barang.filter(b => b.nama.toLowerCase().includes(kata));
+    el("cBarang").innerHTML = (cocok.length === 1 ? "" : `<option value="">${cocok.length ? "Pilih barang (" + cocok.length + ")" : "Tidak ada yang cocok"}</option>`) + cocok.map(pilihanBarang).join("");
+  });
+  el("formCatat").addEventListener("submit", async e => {
+    e.preventDefault();
+    const jumlah = Number(el("cJumlah").value.trim().replace(/\./g, "").replace(",", "."));
+    if (!(jumlah > 0)) return pesan("cPesan", "Jumlah harus angka lebih dari 0. Contoh: 12 atau 1,5");
+    const badan = { tanggal: el("cTanggal").value, jenis, barang_id: +el("cBarang").value, jumlah, keterangan: el("cKet").value };
+    if (keluar) badan.pelanggan_id = +el("cPelanggan").value;
+    const b = barang.find(x => x.id === badan.barang_id);
+    const tombol = e.target.querySelector("button"); tombol.disabled = true;
+    try {
+      const hasil = await panggil("transaksi", badan);
+      await muat(); layarCatat(jenis);
+      pesan("cPesan", `Tersimpan: ${b.nama} ${jenis} ${angka(jumlah)} ${b.satuan}. Stok sekarang ${angka(hasil.stok)} ${b.satuan}.`, true);
+    } catch (g) { pesan("cPesan", g.message); tombol.disabled = false; }
+  });
+}
+
+function layarLaporan() {
+  const aktif = data.riwayat.filter(t => !t.batal);
+  const perPelanggan = new Map();
+  for (const t of aktif) if (t.jenis === "keluar") {
+    const k = t.pelanggan + "\u0000" + t.barang + "\u0000" + t.satuan;
+    perPelanggan.set(k, (perPelanggan.get(k) || 0) + t.jumlah);
+  }
+  const barisPel = [...perPelanggan].sort((a, b) => a[0].localeCompare(b[0], "id")).map(([k, n]) => {
+    const [p, b, s] = k.split("\u0000");
+    return `<tr><td>${aman(p)}</td><td>${aman(b)}</td><td class="angka">${angka(n)} ${aman(s)}</td></tr>`;
+  }).join("");
+  const rentang = saring.dari || saring.sampai ? `${saring.dari ? tgl(saring.dari) : "awal"} sampai ${saring.sampai ? tgl(saring.sampai) : "hari ini"}` : "semua tanggal";
+  isi.innerHTML = kepalaModul("laporan") + `
+    <div class="tombol" style="margin-top:0"><button class="utama" id="lUnduh">Unduh Excel</button><span class="catatan" style="margin:0">Berisi stok, seluruh riwayat, dan pelanggan.</span></div>
+    <div class="pesan" id="lPesan"></div>
+    <h2>Stok saat ini</h2>
+    <div class="gulung">${data.barang.length ? `<table><thead><tr><th>Barang</th><th class="angka">Total masuk</th><th class="angka">Total keluar</th><th class="angka">Stok</th></tr></thead><tbody>${
+      data.barang.map(b => `<tr class="${b.aktif ? "" : "redup"}"><td>${aman(b.nama)}</td><td class="angka">${angka(b.masuk)}</td><td class="angka">${angka(b.keluar)}</td><td class="angka"><b>${angka(b.stok)} ${aman(b.satuan)}</b></td></tr>`).join("")
+    }</tbody></table>` : '<div class="kosong">Belum ada barang.</div>'}</div>
+    <h2>Pilih tanggal riwayat</h2>
+    <form class="kartu" id="formSaring"><div class="isian"><label>Dari tanggal<input id="lDari" type="date" value="${saring.dari}"></label>
+      <label>Sampai tanggal<input id="lSampai" type="date" value="${saring.sampai}"></label></div>
+      <div class="tombol"><button class="utama" type="submit">Tampilkan</button><button class="tipis" type="button" id="lSemua">Semua tanggal</button></div></form>
+    <h2>Barang keluar per pelanggan (${rentang})</h2>
+    <div class="gulung">${barisPel ? `<table><thead><tr><th>Pelanggan</th><th>Barang</th><th class="angka">Jumlah keluar</th></tr></thead><tbody>${barisPel}</tbody></table>` : '<div class="kosong">Tidak ada barang keluar pada tanggal ini.</div>'}</div>
+    <h2>Riwayat keluar masuk (${rentang}, ${data.riwayat.length} catatan)</h2>` + tabelRiwayat(data.riwayat, true, "Tidak ada catatan pada tanggal ini.");
+  pasangBatal(layarLaporan);
+  const terap = async () => { try { await muat(); layarLaporan(); } catch (g) { pesan("lPesan", g.message); } };
+  el("formSaring").addEventListener("submit", e => { e.preventDefault(); saring = { dari: el("lDari").value, sampai: el("lSampai").value }; terap(); });
+  el("lSemua").addEventListener("click", () => { saring = { dari: "", sampai: "" }; terap(); });
+  el("lUnduh").addEventListener("click", async () => {
+    try {
+      const jawab = await panggil("unduh.xlsx");
+      const nama = (/filename="([^"]+)"/.exec(jawab.headers.get("Content-Disposition") || "") || [])[1] || "Stok Menyan.xlsx";
+      const tautan = document.createElement("a");
+      tautan.href = URL.createObjectURL(await jawab.blob()); tautan.download = nama;
+      document.body.append(tautan); tautan.click(); tautan.remove();
+      setTimeout(() => URL.revokeObjectURL(tautan.href), 30000);
+      pesan("lPesan", "Berkas diunduh: " + nama, true);
+    } catch (g) { pesan("lPesan", g.message); }
+  });
+}
+
+// ---------- pengatur ----------
+async function tampil() {
+  el("lapisBatal").hidden = true;
+  if (!sesi) {
+    try { layarMasuk((await panggil("status")).siap); }
+    catch (g) { document.body.className = "utama"; isi.innerHTML = `<div class="kartu sempit"><h2 style="margin-top:0">Tidak tersambung</h2><div>${aman(g.message)}</div><div class="tombol"><button class="utama" onclick="location.reload()">Coba lagi</button></div></div>`; }
+    return;
+  }
+  const kunci = location.hash.slice(1);
+  if (kunci !== "laporan" && (saring.dari || saring.sampai)) saring = { dari: "", sampai: "" };
+  try { await muat(); } catch (g) {
+    if (sesi) { document.body.className = "utama"; isi.innerHTML = `<div class="kartu sempit"><h2 style="margin-top:0">Tidak tersambung</h2><div>${aman(g.message)}</div><div class="tombol"><button class="utama" onclick="location.reload()">Coba lagi</button></div></div>`; }
+    return;
+  }
+  el("tombolSegar").hidden = el("tombolKeluar").hidden = false;
+  if (!MODUL.some(m => m[0] === kunci)) return layarMenu();
+  document.body.className = "";
+  window.scrollTo(0, 0);
+  if (kunci === "pelanggan" || kunci === "barang") layarMaster(kunci);
+  else if (kunci === "laporan") layarLaporan();
+  else layarCatat(kunci);
+}
+window.addEventListener("hashchange", () => { ubah = null; tampil(); });
+el("tombolSegar").addEventListener("click", tampil);
+el("tombolKeluar").addEventListener("click", async () => {
+  try { await panggil("keluar", {}); } catch (g) { /* sesi di server habis sendiri dalam 12 jam */ }
+  lupaSesi(); location.hash = ""; tampil();
+});
+tampil();
+</script>
+</body></html>

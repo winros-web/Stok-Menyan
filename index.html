@@ -182,7 +182,7 @@ function kotakGagal(g) {
 
 async function muat() {
   data = await panggil("data");
-  el("waktu").textContent = "DATA " + tgl(data.waktu.slice(0, 10)) + " " + data.waktu.slice(11, 16).replace(":", ".") + " · " + data.pengisi;
+  el("waktu").textContent = "DATA " + tgl(data.waktu.slice(0, 10)) + " " + data.waktu.slice(11, 16).replace(":", ".");
   el("pilihBarang").innerHTML = data.barang.filter(b => b.aktif).map(b => `<option value="${aman(b.nama)}">`).join("");
   el("pilihPelanggan").innerHTML = data.pelanggan.filter(p => p.aktif).map(p => `<option value="${aman(p.nama)}">`).join("");
 }
@@ -201,19 +201,18 @@ function layarMasuk(siap) {
   el("waktu").textContent = "";
   if (!siap) { isi.innerHTML = '<div class="kartu sempit"><h2 style="margin-top:0">Belum bisa dipakai</h2><div>Sandi belum diatur. Hubungi Joe.</div></div>'; return; }
   isi.innerHTML = `<form class="kartu sempit" id="formMasuk"><h2 style="margin-top:0">Masuk</h2>
-    <div class="isian"><label class="lebar">Nama pengisi<input id="mNama" maxlength="40" required autocomplete="name"></label>
-    <label class="lebar">Sandi<input id="mSandi" type="password" maxlength="200" required autocomplete="current-password"></label></div>
+    <div class="isian"><label class="lebar">Sandi<input id="mSandi" type="password" maxlength="200" required autocomplete="current-password"></label></div>
     <div class="tombol"><button class="utama" type="submit">Masuk</button></div><div class="pesan" id="mPesan"></div></form>`;
   el("formMasuk").addEventListener("submit", async e => {
     e.preventDefault();
     const tombol = e.target.querySelector("button"); tombol.disabled = true;
     try {
-      sesi = await panggil("masuk", { nama: el("mNama").value, sandi: el("mSandi").value });
+      sesi = await panggil("masuk", { sandi: el("mSandi").value });
       try { localStorage.setItem(SIMPAN, JSON.stringify(sesi)); } catch (e2) { /* tetap jalan tanpa disimpan */ }
       await tampil();
     } catch (g) { sesi = null; pesan("mPesan", g.message); tombol.disabled = false; }
   });
-  el("mNama").focus();
+  el("mSandi").focus();
 }
 
 function layarMenu() {

@@ -159,7 +159,9 @@ const SIMPAN = "stokMenyanSesi";
 const MODUL = [
   ["barang", "MASTER BARANG", "Nama dan harga barang"],
   ["pelanggan", "MASTER PELANGGAN", "Daftar pelanggan dan peti"],
+  ["resep", "BAHAN PRODUK", "Bahan untuk membuat produk"],
   ["stok", "STOK", "Stok tersedia"],
+  ["permintaan", "PERMINTAAN", "Pesanan pelanggan dan bahannya"],
   ["masuk", "MASUK", "Catat barang masuk"],
   ["keluar", "KELUAR", "Catat barang keluar"],
   ["laporan", "LAPORAN", "Riwayat, saldo, unduh Excel"],
@@ -213,10 +215,10 @@ async function muat() {
   el("pilihPelanggan").innerHTML = data.pelanggan.filter(p => p.aktif).map(p => `<option value="${aman(p.nama)}">`).join("");
 }
 // tombol yang harus ditekan dua kali supaya tidak terhapus karena salah sentuh
-function duaKali(tombol, jalankan) {
+function duaKali(tombol, jalankan, tanya = "Yakin hapus?") {
   if (tombol.dataset.yakin) return jalankan();
   const asal = tombol.textContent;
-  tombol.dataset.yakin = "1"; tombol.textContent = "Yakin hapus?"; tombol.style.borderColor = tombol.style.color = "#f0958a";
+  tombol.dataset.yakin = "1"; tombol.textContent = tanya; tombol.style.borderColor = tombol.style.color = "#f0958a";
   setTimeout(() => { if (tombol.isConnected) { delete tombol.dataset.yakin; tombol.textContent = asal; tombol.style.borderColor = tombol.style.color = ""; } }, 4000);
 }
 
@@ -340,13 +342,150 @@ function pasangHapusBaris(ulang, idPesan) {
   })));
 }
 
+// perilaku isian banyak baris: buang baris, tambah baris, Enter pindah kolom/baris
+function pasangBaris(tubuh, tombolTambah, barisIsian, sesudah = () => {}) {
+  tubuh.addEventListener("input", e => { e.target.classList.remove("salah"); sesudah(); });
+  tubuh.addEventListener("click", e => {
+    if (!e.target.closest("[data-buang]")) return;
+    e.target.closest("tr").remove();
+    if (!tubuh.rows.length) tubuh.insertAdjacentHTML("beforeend", barisIsian());
+    sesudah();
+  });
+  tombolTambah.addEventListener("click", () => { tubuh.insertAdjacentHTML("beforeend", barisIsian()); tubuh.lastElementChild.querySelector(".bNama").focus(); });
+  // Enter di kolom qty baris terakhir = baris baru, supaya bisa mengetik terus tanpa tetikus
+  tubuh.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const baris = e.target.closest("tr");
+    if (e.target.classList.contains("bNama")) return baris.querySelector(".bQty").focus();
+    if (!baris.nextElementSibling) tubuh.insertAdjacentHTML("beforeend", barisIsian());
+    baris.nextElementSibling.querySelector(".bNama").focus();
+  });
+}
+
+// ---------- permintaan pelanggan: apa yang perlu dibuat dan bahan yang perlu diproses ----------
+const bulat = n => Math.round(n * 1000) / 1000;
+function hitungKebutuhan() {
+  const brg = new Map(data.barang.map(b => [b.id, b]));
+  const diminta = new Map();
+  for (const m of data.permintaan) diminta.set(m.barang_id, (diminta.get(m.barang_id) || 0) + m.jumlah);
+  // perlu dibuat = diminta dikurangi stok yang ada (stok minus dianggap 0)
+  const produk = [...diminta].map(([id, jml]) => {
+    const b = brg.get(id);
+    return { b, jml: bulat(jml), buat: Math.max(0, bulat(jml - Math.max(b.stok, 0))), resep: data.resep.filter(r => r.produk_id === id) };
+  });
+  const bahan = new Map();
+  for (const x of produk) for (const r of x.resep) {
+    if (!x.buat) continue;
+    const k = bahan.get(r.bahan_id) || { b: brg.get(r.bahan_id), perlu: 0, untuk: [] };
+    k.perlu = bulat(k.perlu + x.buat * r.jumlah); k.untuk.push(x.b.nama);
+    bahan.set(r.bahan_id, k);
+  }
+  return { brg, produk, bahan: [...bahan.values()] };
+}
+function panelPermintaan() {
+  const { brg, produk, bahan } = hitungKebutuhan();
+  const kepala = `<h2>Permintaan belum dikirim (${data.permintaan.length})</h2><div class="pesan" id="rPesan" style="margin-top:0"></div>`;
+  if (!data.permintaan.length) return kepala + '<div class="gulung"><div class="kosong">Belum ada permintaan. Isi lewat isian di sebelah.</div></div>';
+  const stokSel = n => `<td class="angka ${n < 0 ? "minus" : ""}">${angka(n)}</td>`;
+  return kepala + `<div class="gulung" style="max-height:${Math.round(52 / 0.75)}vh"><table><thead><tr><th>Tanggal</th><th>Pelanggan</th><th>Nama barang</th><th class="angka">Qty</th><th class="angka">Stok</th><th></th></tr></thead><tbody>${
+      data.permintaan.map(m => `<tr><td>${tgl(m.tanggal)}</td><td>${aman(m.pelanggan)}</td><td>${aman(m.barang)}</td><td class="angka"><b>${angka(m.jumlah)}</b></td>${stokSel(brg.get(m.barang_id).stok)}` +
+        `<td class="aksi"><button class="tipis" data-kirim="${m.id}">Kirim</button><button class="tipis" data-hapus-minta="${m.id}">Hapus</button></td></tr>`).join("")
+    }</tbody></table></div>
+    <div class="catatan">Kirim = dicatat sebagai barang keluar hari ini untuk pelanggan itu, lalu hilang dari daftar ini.</div>
+    <h2>Yang perlu dibuat</h2><div class="gulung" style="max-height:none"><table><thead><tr><th>Nama barang</th><th class="angka">Diminta</th><th class="angka">Stok</th><th class="angka">Perlu dibuat</th><th>Bahan untuk 1 barang</th></tr></thead><tbody>${
+      produk.map(x => `<tr><td>${aman(x.b.nama)}</td><td class="angka">${angka(x.jml)}</td>${stokSel(x.b.stok)}<td class="angka"><b>${angka(x.buat)}</b></td><td>${
+        x.resep.length ? x.resep.map(r => angka(r.jumlah) + " × " + aman(brg.get(r.bahan_id).nama)).join(", ") : '<a href="#resep" style="color:#6fb3d2">Bahan belum diisi</a>'}</td></tr>`).join("")
+    }</tbody></table></div>
+    <h2>Bahan yang perlu diproses</h2><div class="gulung" style="max-height:none">${bahan.length ? `<table><thead><tr><th>Bahan</th><th>Untuk</th><th class="angka">Perlu</th><th class="angka">Stok bahan</th><th class="angka">Kurang</th></tr></thead><tbody>${
+      bahan.map(k => { const kurang = Math.max(0, bulat(k.perlu - Math.max(k.b.stok, 0))); return `<tr><td>${aman(k.b.nama)}</td><td>${aman(k.untuk.join(", "))}</td><td class="angka"><b>${angka(k.perlu)}</b></td>${stokSel(k.b.stok)}<td class="angka ${kurang ? "minus" : ""}">${angka(kurang)}</td></tr>`; }).join("")
+    }</tbody></table>` : '<div class="kosong">Tidak ada bahan yang perlu diproses: stok cukup, atau bahan produknya belum diisi di menu Bahan Produk.</div>'}</div>
+    <div class="catatan">Perlu dibuat = diminta dikurangi stok yang ada (stok minus dihitung 0). Bahan = perlu dibuat × bahan untuk 1 barang.</div>`;
+}
+function pasangPermintaan() {
+  const jalankan = async (jalur, badan, kabar) => {
+    try { const hasil = await panggil(jalur, badan); await muat(); await layarCatat("permintaan"); pesan("rPesan", kabar(hasil), true); }
+    catch (g) { pesan("rPesan", g.message); }
+  };
+  isi.querySelectorAll("[data-kirim]").forEach(t => t.addEventListener("click", () => duaKali(t,
+    () => jalankan("permintaan/kirim", { id: [+t.dataset.kirim] }, h => "Dikirim dan dicatat sebagai barang keluar, harga " + angka(h.total) + "."), "Yakin kirim?")));
+  isi.querySelectorAll("[data-hapus-minta]").forEach(t => t.addEventListener("click", () => duaKali(t,
+    () => jalankan("permintaan/hapus", { id: +t.dataset.hapusMinta }, () => "Permintaan dihapus."))));
+}
+
+// ---------- bahan produk: bahan apa saja untuk membuat 1 produk ----------
+function layarResep(kabar) {
+  const barang = new Map(data.barang.filter(b => b.aktif).map(b => [kunci(b.nama), b]));
+  const brg = new Map(data.barang.map(b => [b.id, b]));
+  const kelompok = new Map();
+  for (const r of data.resep) { if (!kelompok.has(r.produk_id)) kelompok.set(r.produk_id, []); kelompok.get(r.produk_id).push(r); }
+  const barisIsian = (nama = "", qty = "") => `<tr><td><input class="bNama besar" list="pilihBarang" autocomplete="off" placeholder="Ketik nama bahan" value="${aman(nama)}"></td>
+    <td class="qty"><input class="bQty" inputmode="decimal" autocomplete="off" placeholder="0" value="${qty}"></td>
+    <td class="buang"><button class="tipis" type="button" data-buang tabindex="-1" aria-label="Buang baris">×</button></td></tr>`;
+  isi.innerHTML = `<div class="dua rata"><div>${kepalaModul("resep")}<form class="kartu" id="formResep">
+      <div class="isian"><label class="lebar">Produk<input id="rProduk" class="besar" list="pilihBarang" required autocomplete="off" placeholder="Ketik nama produk"></label></div>
+      <table class="baris" style="margin-top:14px"><thead><tr><th>Bahan</th><th>Qty untuk 1 produk</th><th></th></tr></thead><tbody id="rBaris"></tbody></table>
+      <div class="tombol" style="margin-top:8px"><button class="tipis" type="button" id="rTambah">+ Tambah bahan</button></div>
+      <div class="tombol"><button class="utama" type="submit">Simpan bahan</button></div><div class="pesan" id="rPesan"></div>
+      <div class="catatan">Produk dan bahan dipilih dari Master Barang. Qty = banyaknya bahan untuk membuat 1 produk, contoh: 1,2</div></form></div>
+    <div><div class="judul-cari"><h2>Produk yang sudah punya bahan (${kelompok.size})</h2><input id="rCari" autocomplete="off" placeholder="Cari nama produk atau bahan"></div>
+    <div class="gulung" id="tabelUtama">${kelompok.size ? `<table><thead><tr><th>Produk</th><th>Bahan untuk 1 produk</th><th></th></tr></thead><tbody>${
+      [...kelompok].map(([id, daftar]) => `<tr><td>${aman(brg.get(id).nama)}</td><td>${daftar.map(r => angka(r.jumlah) + " × " + aman(brg.get(r.bahan_id).nama)).join(", ")}</td>` +
+        `<td class="aksi"><button class="tipis" data-ubah="${id}">Edit</button><button class="tipis" data-hapus="${id}">Hapus</button></td></tr>`).join("")
+    }</tbody></table>` : '<div class="kosong">Belum ada produk yang diisi bahannya.</div>'}</div></div></div>`;
+  if (kabar) pesan("rPesan", kabar, true);
+  const tubuh = el("rBaris");
+  // memilih produk yang sudah punya bahan = bahannya langsung tampil untuk diedit
+  const muatBahan = () => {
+    const b = barang.get(kunci(el("rProduk").value));
+    const lama = (b && kelompok.get(b.id)) || [];
+    tubuh.innerHTML = lama.map(r => barisIsian(brg.get(r.bahan_id).nama, angka(r.jumlah))).join("") + barisIsian().repeat(Math.max(1, 3 - lama.length));
+  };
+  muatBahan();
+  el("rProduk").addEventListener("change", muatBahan);
+  pasangBaris(tubuh, el("rTambah"), barisIsian);
+  pasangCari("rCari");
+  const simpan = async (badan, berhasil) => {
+    try { await panggil("resep", badan); await muat(); layarResep(berhasil); }
+    catch (g) { pesan("rPesan", g.message); }
+  };
+  el("formResep").addEventListener("submit", e => {
+    e.preventDefault();
+    const produk = barang.get(kunci(el("rProduk").value));
+    el("rProduk").classList.toggle("salah", !produk);
+    if (!produk) return pesan("rPesan", `Produk "${el("rProduk").value.trim()}" tidak ada di Master Barang. Pilih dari daftar yang muncul saat mengetik.`);
+    const bahan = [];
+    let salah = "";
+    for (const r of tubuh.rows) {
+      const nama = r.querySelector(".bNama"), qty = r.querySelector(".bQty");
+      if (!nama.value.trim() && !qty.value.trim()) continue;
+      const b = barang.get(kunci(nama.value)), jumlah = bacaAngka(qty.value);
+      const namaSalah = !b || b.id === produk.id, qtySalah = !(jumlah > 0);
+      nama.classList.toggle("salah", namaSalah); qty.classList.toggle("salah", qtySalah);
+      if (!salah && !b) salah = `Bahan "${nama.value.trim()}" tidak ada di Master Barang. Pilih dari daftar yang muncul saat mengetik.`;
+      if (!salah && namaSalah) salah = "Produk tidak bisa menjadi bahan untuk dirinya sendiri.";
+      if (!salah && qtySalah) salah = `Qty ${b.nama} belum benar. Contoh: 2 atau 1,2`;
+      bahan.push({ bahan_id: b?.id, jumlah });
+    }
+    if (!salah && !bahan.length) salah = "Isi paling sedikit satu bahan.";
+    if (salah) return pesan("rPesan", salah);
+    simpan({ produk_id: produk.id, bahan }, "Bahan " + produk.nama + " tersimpan.");
+  });
+  isi.querySelectorAll("[data-ubah]").forEach(t => t.addEventListener("click", () => {
+    el("rProduk").value = brg.get(+t.dataset.ubah).nama; muatBahan(); window.scrollTo(0, 0); tubuh.querySelector(".bQty").focus();
+  }));
+  isi.querySelectorAll("[data-hapus]").forEach(t => t.addEventListener("click", () => duaKali(t,
+    () => simpan({ produk_id: +t.dataset.hapus, bahan: [] }, "Daftar bahan " + brg.get(+t.dataset.hapus).nama + " dihapus."))));
+  el("rProduk").focus();
+}
+
 async function layarCatat(jenis, kabar) {
-  const keluar = jenis === "keluar";
+  const minta = jenis === "permintaan", keluar = minta || jenis === "keluar";
   const barang = new Map(data.barang.filter(b => b.aktif).map(b => [kunci(b.nama), b]));
   const pelanggan = new Map(data.pelanggan.filter(p => p.aktif).map(p => [kunci(p.nama), p]));
   const kurang = !barang.size ? 'Belum ada barang. Isi dulu <a href="#barang" style="color:#6fb3d2">Master Barang</a>.'
     : keluar && !pelanggan.size ? 'Belum ada pelanggan. Isi dulu <a href="#pelanggan" style="color:#6fb3d2">Master Pelanggan</a>.' : "";
-  const terakhir = (await panggil("laporan?jenis=" + jenis + "&batas=30")).baris;
+  const terakhir = minta ? [] : (await panggil("laporan?jenis=" + jenis + "&batas=30")).baris;
   const barisIsian = () => `<tr><td><input class="bNama besar" list="pilihBarang" autocomplete="off" placeholder="Ketik nama barang"></td>
     <td class="qty"><input class="bQty" inputmode="decimal" autocomplete="off" placeholder="0"></td>${keluar ? '<td class="sub angka"></td>' : ""}
     <td class="buang"><button class="tipis" type="button" data-buang tabindex="-1" aria-label="Buang baris">×</button></td></tr>`;
@@ -355,10 +494,10 @@ async function layarCatat(jenis, kabar) {
       <label>Tanggal<input id="cTanggal" type="date" required max="${data.hari_ini}" value="${data.hari_ini}"></label></div>
       <table class="baris" style="margin-top:14px"><thead><tr><th>Nama barang</th><th>Qty</th>${keluar ? '<th class="sub angka">Harga</th>' : ""}<th></th></tr></thead><tbody id="cBaris">${barisIsian().repeat(BARIS_AWAL)}</tbody></table>
       <div class="tombol" style="margin-top:8px"><button class="tipis" type="button" id="cTambah">+ Tambah baris</button>${keluar ? '<span class="ringkas" style="margin:0 0 0 auto"><span>Total harga</span><b id="cTotal">0</b></span>' : ""}</div>
-      <div class="tombol"><button class="utama" type="submit">Simpan barang ${jenis}</button></div><div class="pesan" id="cPesan"></div>
+      <div class="tombol"><button class="utama" type="submit">${minta ? "Simpan permintaan" : "Simpan barang " + jenis}</button></div><div class="pesan" id="cPesan"></div>
       ${keluar ? "" : '<div class="catatan">Qty boleh minus untuk koreksi stok, contoh: -19,5</div>'}</form>`) +
-    `</div><div><h2>30 baris barang ${jenis} terakhir</h2><div class="pesan" id="rPesan" style="margin-top:0"></div>` + tabelLaporan(terakhir, `Belum ada catatan barang ${jenis}.`) + "</div></div>";
-  pasangHapusBaris(() => layarCatat(jenis), "rPesan");
+    "</div><div>" + (minta ? panelPermintaan() : `<h2>30 baris barang ${jenis} terakhir</h2><div class="pesan" id="rPesan" style="margin-top:0"></div>` + tabelLaporan(terakhir, `Belum ada catatan barang ${jenis}.`)) + "</div></div>";
+  if (minta) pasangPermintaan(); else pasangHapusBaris(() => layarCatat(jenis), "rPesan");
   if (kurang) return;
   if (kabar) pesan("cPesan", kabar, true);
   const tubuh = el("cBaris");
@@ -376,23 +515,7 @@ async function layarCatat(jenis, kabar) {
     }
     el("cTotal").textContent = angka(total);
   };
-  tubuh.addEventListener("input", e => { e.target.classList.remove("salah"); hitung(); });
-  tubuh.addEventListener("click", e => {
-    if (!e.target.closest("[data-buang]")) return;
-    e.target.closest("tr").remove();
-    if (!tubuh.rows.length) tubuh.insertAdjacentHTML("beforeend", barisIsian());
-    hitung();
-  });
-  el("cTambah").addEventListener("click", () => { tubuh.insertAdjacentHTML("beforeend", barisIsian()); tubuh.lastElementChild.querySelector(".bNama").focus(); });
-  // Enter di kolom qty baris terakhir = baris baru, supaya bisa mengetik terus tanpa tetikus
-  tubuh.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    const baris = e.target.closest("tr");
-    if (e.target.classList.contains("bNama")) return baris.querySelector(".bQty").focus();
-    if (!baris.nextElementSibling) tubuh.insertAdjacentHTML("beforeend", barisIsian());
-    baris.nextElementSibling.querySelector(".bNama").focus();
-  });
+  pasangBaris(tubuh, el("cTambah"), barisIsian, hitung);
   el("formCatat").addEventListener("submit", async e => {
     e.preventDefault();
     const terisi = baca().filter(x => !x.kosong);
@@ -415,9 +538,10 @@ async function layarCatat(jenis, kabar) {
     if (salah) return pesan("cPesan", salah);
     const tombol = e.target.querySelector("button.utama"); tombol.disabled = true;
     try {
-      const hasil = await panggil("transaksi", badan);
+      const hasil = await panggil(minta ? "permintaan" : "transaksi", badan);
       await muat();
-      await layarCatat(jenis, `Tersimpan ${hasil.id.length} barang ${jenis}` + (keluar ? ` untuk ${p.nama}, total harga ${angka(hasil.total)}.` : "."));
+      await layarCatat(jenis, minta ? `Permintaan ${p.nama} tersimpan (${hasil.id.length} barang).`
+        : `Tersimpan ${hasil.id.length} barang ${jenis}` + (keluar ? ` untuk ${p.nama}, total harga ${angka(hasil.total)}.` : "."));
     } catch (g) { pesan("cPesan", g.message); tombol.disabled = false; }
   });
   (keluar ? el("cPelanggan") : tubuh.querySelector(".bNama")).focus();
@@ -482,6 +606,7 @@ async function tampil() {
     window.scrollTo(0, 0);
     if (k === "barang" || k === "pelanggan") layarMaster(k);
     else if (k === "stok") layarStok();
+    else if (k === "resep") layarResep();
     else if (k === "laporan") await layarLaporan();
     else await layarCatat(k);
   } catch (g) { if (sesi) kotakGagal(g); }

@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<!-- Pagar isi (audit 17 Nov 2026): halaman hanya boleh memuat huruf Google dan memanggil layanan Stok Menyan sendiri -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self' https://svarna5s-mac-mini.tail7a15d8.ts.net:10000; base-uri 'none'; form-action 'self'">
 <title>Stok Menyan</title>
 <script>
 // tema dipasang sebelum halaman digambar supaya tidak berkedip
@@ -113,7 +115,7 @@ td.aksi button{padding:6px 14px;font-size:13px;margin-left:6px}
 tr.redup td{color:var(--pudar)}
 .minus{color:var(--buruk)}
 .kosong{color:var(--redup);padding:18px 14px}
-.sempit{max-width:460px;margin:0 auto;width:100%}
+.sempit{max-width:460px;margin:0 auto;width:100%;box-sizing:border-box}
 .catatan{color:var(--redup);font-size:14px;letter-spacing:.06em;margin-top:10px}
 .ringkas{display:flex;gap:10px 28px;flex-wrap:wrap;align-items:baseline;margin:14px 0 4px}
 .ringkas b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}

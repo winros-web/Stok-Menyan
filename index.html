@@ -2,28 +2,61 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
 <title>Stok Menyan</title>
+<script>
+// tema dipasang sebelum halaman digambar supaya tidak berkedip
+(() => {
+  const KUNCI_TEMA = "svarna-dashboard-theme", akar = document.documentElement, perangkat = matchMedia("(prefers-color-scheme: dark)");
+  let pilihan = null;
+  try { const simpan = localStorage.getItem(KUNCI_TEMA); if (simpan === "light" || simpan === "dark") pilihan = simpan; } catch (e) { /* penyimpanan diblokir */ }
+  const pasang = tema => {
+    akar.dataset.svarnaTheme = tema;
+    const tombol = document.getElementById("tombolTema");
+    if (tombol) tombol.textContent = tema === "dark" ? "Tema terang" : "Tema gelap";
+  };
+  const dariPerangkat = () => perangkat.matches ? "dark" : "light";
+  pasang(pilihan || dariPerangkat());
+  perangkat.addEventListener("change", () => { if (!pilihan) pasang(dariPerangkat()); });
+  document.addEventListener("DOMContentLoaded", () => {
+    pasang(akar.dataset.svarnaTheme);
+    document.getElementById("tombolTema").addEventListener("click", () => {
+      pilihan = akar.dataset.svarnaTheme === "dark" ? "light" : "dark";
+      try { localStorage.setItem(KUNCI_TEMA, pilihan); } catch (e) { /* tetap ganti tema tanpa disimpan */ }
+      pasang(pilihan);
+    });
+  });
+})();
+</script>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&family=Archivo:wght@700;800&display=swap" rel="stylesheet">
 <style>
-/* Tema = Dashboard Svarna (otomasi/susun_induk.py): warna, huruf, kotak menu, merek raksasa, skala 75% di laptop */
-:root{color-scheme:dark}
-body{margin:0;background:#11171d;color:#e6ecf1;font:19px/1.45 "Aptos Narrow","Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+/* Tema = Dashboard Svarna (otomasi/susun_induk.py): warna, huruf, kotak menu, merek raksasa, skala 75% di laptop.
+   Semua warna lewat var(--...) di bawah; jangan menulis kode warna langsung di aturan lain. */
+/* Tema gelap dan terang (Joe 17 Nov 2026). Palet terang = palet Dashboard Svarna. Pilihan disimpan di browser dengan kunci
+   yang sama dengan Dashboard Svarna; bila belum pernah memilih, ikut setelan gelap/terang perangkat. */
+:root{color-scheme:dark;--bg:#11171d;--teks:#e6ecf1;--garis:#2a3642;--redup:#9aa8b5;--pudar:#5f6e7b;--aksen:#6fb3d2;--aksen-terang:#8cc6e0;
+  --di-aksen:#11171d;--kartu-a:#1d2833;--kartu-b:#18212a;--kepala:#18212a;--isian:#11171d;--buruk:#f0958a;--baik:#7fd0a0;
+  --tepi-tombol:rgba(255,255,255,.25);--sorot:rgba(255,255,255,.06);--sorot-baris:rgba(111,179,210,.07)}
+:root[data-svarna-theme="light"]{color-scheme:light;--bg:#f1f4f6;--teks:#20303d;--garis:#c5d0d8;--redup:#526878;--pudar:#6f8290;--aksen:#32627f;
+  --aksen-terang:#3f7699;--di-aksen:#fff;--kartu-a:#fff;--kartu-b:#fff;--kepala:#e8eef2;--isian:#fff;--buruk:#984c46;--baik:#34634c;
+  --tepi-tombol:rgba(32,48,61,.3);--sorot:rgba(32,48,61,.06);--sorot-baris:rgba(50,98,127,.08)}
+:root[data-svarna-theme="light"] .merek-raksasa svg{opacity:.75}
+body{margin:0;background:var(--bg);color:var(--teks);font:19px/1.45 "Aptos Narrow","Archivo Narrow","Arial Narrow",system-ui,sans-serif;
   text-transform:uppercase;letter-spacing:.03em;-webkit-font-smoothing:antialiased}
 :root{--skala:1}
 @media (min-width:700px){html{zoom:.75}:root{--skala:.75}}
 
-.atas{position:sticky;top:0;z-index:9;background:#11171d;border-bottom:1px solid #2a3642}
+.atas{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--garis)}
 .atas .bungkus{padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap}
 .atas .merek{font-weight:600;font-size:24px;letter-spacing:.3em}
 .atas .kanan{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:8px}
-.atas .waktu{color:#9aa8b5;font-size:14px;letter-spacing:.06em}
-button.tipis{font:inherit;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#e6ecf1;background:none;cursor:pointer;
-  border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 18px}
-button.tipis:hover{border-color:#e6ecf1;background:rgba(255,255,255,.06)}
+.atas .waktu{color:var(--redup);font-size:14px;letter-spacing:.06em}
+button.tipis{font:inherit;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--teks);background:none;cursor:pointer;
+  border:1px solid var(--tepi-tombol);border-radius:999px;padding:10px 18px}
+button.tipis:hover{border-color:var(--teks);background:var(--sorot)}
 button.tipis:disabled{opacity:.45;cursor:default}
 @property --sorot-x{syntax:"<percentage>";inherits:true;initial-value:0%}
-.merek-raksasa{width:100%;color:#e6ecf1;user-select:none;
+.merek-raksasa{width:100%;color:var(--teks);user-select:none;
   -webkit-mask-image:radial-gradient(circle at var(--sorot-x) 50%,#000 0%,transparent 60%);
   mask-image:radial-gradient(circle at var(--sorot-x) 50%,#000 0%,transparent 60%)}
 .merek-raksasa svg{display:block;width:100%;height:auto;opacity:.4}
@@ -31,7 +64,7 @@ button.tipis:disabled{opacity:.45;cursor:default}
 @keyframes sorot-jalan{from{--sorot-x:0%}to{--sorot-x:100%}}
 @media (hover:none){.merek-raksasa{animation:sorot-jalan 7s ease-in-out infinite alternate}}
 @media (prefers-reduced-motion:reduce){.merek-raksasa{animation:none;--sorot-x:50%}}
-.atas-merek{border-bottom:1px solid #2a3642}
+.atas-merek{border-bottom:1px solid var(--garis)}
 /* di layar kerja merek raksasa disembunyikan supaya tabel dapat tempat (Joe: tampilan penuh layar) */
 body:not(.utama) .atas-merek{display:none}
 
@@ -39,52 +72,52 @@ main{margin:24px 0 6vh;padding:0 24px}
 body.utama{min-height:calc(100vh / var(--skala));display:flex;flex-direction:column}
 body.utama main{flex:1;width:100%;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;justify-content:center}
 body.utama .modul{margin-top:0}
-h2{font-size:16px;letter-spacing:.3em;color:#6fb3d2;margin:24px 0 10px}
+h2{font-size:16px;letter-spacing:.3em;color:var(--aksen);margin:24px 0 10px}
 .pilih{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
-.cab{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:24px 22px 20px;color:#e6ecf1;
+.cab{background:linear-gradient(165deg,var(--kartu-a),var(--kartu-b) 60%);border:1px solid var(--garis);border-radius:6px;padding:24px 22px 20px;color:var(--teks);
   min-height:150px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;text-decoration:none}
-a.cab:hover{border-color:#6fb3d2}
+a.cab:hover{border-color:var(--aksen)}
 .cab .nama{font-weight:600;font-size:clamp(26px,2.6vw,34px);line-height:1.1;letter-spacing:.04em}
-.cab .ket{margin-top:auto;padding-top:10px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em;width:100%}
+.cab .ket{margin-top:auto;padding-top:10px;color:var(--redup);font-size:14px;font-weight:600;letter-spacing:.1em;width:100%}
 .modul{margin-top:24px}
 .modul .cab{min-height:200px;justify-content:center}
 .modul .cab .nama{font-size:clamp(22px,2vw,30px)}
 .pilih.modul{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
 
 /* tambahan untuk formulir dan tabel, memakai warna yang sama */
-.kartu{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:22px}
+.kartu{background:linear-gradient(165deg,var(--kartu-a),var(--kartu-b) 60%);border:1px solid var(--garis);border-radius:6px;padding:22px}
 .isian{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px 16px;align-items:end}
-.isian label{display:flex;flex-direction:column;gap:6px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em}
+.isian label{display:flex;flex-direction:column;gap:6px;color:var(--redup);font-size:14px;font-weight:600;letter-spacing:.1em}
 .isian .lebar{grid-column:1/-1}
-input{font:inherit;font-size:19px;text-transform:none;letter-spacing:.02em;color:#e6ecf1;background:#11171d;border:1px solid #2a3642;
+input{font:inherit;font-size:19px;text-transform:none;letter-spacing:.02em;color:var(--teks);background:var(--isian);border:1px solid var(--garis);
   border-radius:6px;padding:12px 14px;min-width:0;width:100%;box-sizing:border-box}
-input:focus,button:focus-visible,a:focus-visible{outline:2px solid #6fb3d2;outline-offset:1px}
-input::placeholder{color:#5f6e7b}
+input:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--aksen);outline-offset:1px}
+input::placeholder{color:var(--pudar)}
 input.besar{text-transform:uppercase}
-input.salah{border-color:#f0958a}
+input.salah{border-color:var(--buruk)}
 .tombol{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
-button.utama{font:inherit;font-size:17px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#11171d;background:#6fb3d2;
-  border:1px solid #6fb3d2;border-radius:999px;padding:12px 28px;cursor:pointer}
-button.utama:hover{background:#8cc6e0}
+button.utama{font:inherit;font-size:17px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--di-aksen);background:var(--aksen);
+  border:1px solid var(--aksen);border-radius:999px;padding:12px 28px;cursor:pointer}
+button.utama:hover{background:var(--aksen-terang)}
 button.utama:disabled{opacity:.5;cursor:default}
 .pesan{min-height:1.45em;font-size:16px;letter-spacing:.05em;margin-top:12px}
-.pesan.baik{color:#7fd0a0}.pesan.buruk{color:#f0958a}
-.gulung{overflow-x:auto;border:1px solid #2a3642;border-radius:6px}
+.pesan.baik{color:var(--baik)}.pesan.buruk{color:var(--buruk)}
+.gulung{overflow-x:auto;border:1px solid var(--garis);border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:17px}
-th,td{padding:11px 14px;border-bottom:1px solid #2a3642;text-align:left;vertical-align:middle}
-th{color:#9aa8b5;font-size:13px;font-weight:600;letter-spacing:.12em;background:#18212a;white-space:nowrap}
+th,td{padding:11px 14px;border-bottom:1px solid var(--garis);text-align:left;vertical-align:middle}
+th{color:var(--redup);font-size:13px;font-weight:600;letter-spacing:.12em;background:var(--kepala);white-space:nowrap}
 tr:last-child td{border-bottom:0}
 td.angka,th.angka{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td.aksi{white-space:nowrap;text-align:right}
 td.aksi button{padding:6px 14px;font-size:13px;margin-left:6px}
-tr.redup td{color:#5f6e7b}
-.minus{color:#f0958a}
-.kosong{color:#9aa8b5;padding:18px 14px}
+tr.redup td{color:var(--pudar)}
+.minus{color:var(--buruk)}
+.kosong{color:var(--redup);padding:18px 14px}
 .sempit{max-width:460px;margin:0 auto;width:100%}
-.catatan{color:#9aa8b5;font-size:14px;letter-spacing:.06em;margin-top:10px}
+.catatan{color:var(--redup);font-size:14px;letter-spacing:.06em;margin-top:10px}
 .ringkas{display:flex;gap:10px 28px;flex-wrap:wrap;align-items:baseline;margin:14px 0 4px}
 .ringkas b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
-.ringkas span{color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em}
+.ringkas span{color:var(--redup);font-size:14px;font-weight:600;letter-spacing:.1em}
 /* isian banyak barang (sheet Masuk / Keluar) */
 table.baris td{padding:6px 8px;border:0}
 table.baris th{background:none;padding:6px 8px;border:0}
@@ -94,9 +127,9 @@ table.baris td.buang{width:1%}
 @media (max-width:699px){table.baris td.qty{width:92px}table.baris td.sub,table.baris th.sub{display:none}}
 /* menu tetap di atas: pindah modul tanpa kembali ke menu utama */
 .nav{display:flex;gap:6px;overflow-x:auto;padding:0 24px 10px}
-.nav a{white-space:nowrap;text-decoration:none;color:#9aa8b5;font-size:15px;font-weight:600;letter-spacing:.1em;padding:9px 18px;border:1px solid #2a3642;border-radius:999px}
-.nav a:hover{color:#e6ecf1;border-color:#6fb3d2}
-.nav a.kini{color:#11171d;background:#6fb3d2;border-color:#6fb3d2}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--redup);font-size:15px;font-weight:600;letter-spacing:.1em;padding:9px 18px;border:1px solid var(--garis);border-radius:999px}
+.nav a:hover{color:var(--teks);border-color:var(--aksen)}
+.nav a.kini{color:var(--di-aksen);background:var(--aksen);border-color:var(--aksen)}
 /* formulir dan tabel berdampingan di layar lebar */
 .dua{display:grid;gap:24px;align-items:start}
 .dua>*{min-width:0}
@@ -106,26 +139,26 @@ table.baris td.buang{width:1%}
 .judul-cari h2{margin:0}
 .judul-cari input{flex:1;min-width:220px}
 .saring{display:flex;gap:14px 16px;flex-wrap:wrap;align-items:end}
-.saring label{display:flex;flex-direction:column;gap:6px;color:#9aa8b5;font-size:14px;font-weight:600;letter-spacing:.1em;width:200px}
+.saring label{display:flex;flex-direction:column;gap:6px;color:var(--redup);font-size:14px;font-weight:600;letter-spacing:.1em;width:200px}
 .saring label.cari{flex:1;min-width:260px;width:auto}
 .saring .ringkas{margin:0 0 0 auto}
-tbody tr:hover td{background:rgba(111,179,210,.07)}
+tbody tr:hover td{background:var(--sorot-baris)}
 @media (min-width:700px){
   body:not(.utama) .gulung{max-height:calc(100vh / var(--skala) - 215px);overflow:auto}
   .gulung th{position:sticky;top:0;z-index:1}
 }
 /* stok sebagai petak: nama + angka besar, memenuhi layar */
 .pil{display:flex;gap:8px;flex-wrap:wrap}
-.pil button.kini{color:#11171d;background:#6fb3d2;border-color:#6fb3d2}
+.pil button.kini{color:var(--di-aksen);background:var(--aksen);border-color:var(--aksen)}
 .petak{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:10px}
-.ubin{background:linear-gradient(165deg,#1d2833,#18212a 60%);border:1px solid #2a3642;border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ubin{background:linear-gradient(165deg,var(--kartu-a),var(--kartu-b) 60%);border:1px solid var(--garis);border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .ubin b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.ubin.nol b{color:#5f6e7b}
-.ubin.minus{border-color:#f0958a}
+.ubin.nol b{color:var(--pudar)}
+.ubin.minus{border-color:var(--buruk)}
 [hidden]{display:none!important}
 </style></head>
 <body class="utama"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="derauMerek"><feTurbulence type="fractalNoise" baseFrequency="1" numOctaves="4" result="derau"/><feComposite in="SourceGraphic" in2="derau" operator="in"/></filter></svg>
-<header class="atas"><div class="bungkus"><div class="merek">STOK MENYAN</div><div class="kanan"><span class="waktu" id="waktu"></span><button class="tipis" id="tombolSegar" hidden>Update</button><button class="tipis" id="tombolKeluar" hidden>Keluar</button></div></div><nav class="nav" id="nav" hidden></nav></header>
+<header class="atas"><div class="bungkus"><div class="merek">STOK MENYAN</div><div class="kanan"><span class="waktu" id="waktu"></span><button class="tipis" id="tombolTema" type="button">Tema terang</button><button class="tipis" id="tombolSegar" hidden>Update</button><button class="tipis" id="tombolKeluar" hidden>Keluar</button></div></div><nav class="nav" id="nav" hidden></nav></header>
 <div class="atas-merek"><div class="merek-raksasa" aria-hidden="true">
 <svg class="tinggi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2468.89 566.93" fill="currentColor"><text x="0" y="546" font-size="760" textLength="2468.89" lengthAdjust="spacingAndGlyphs" filter="url(#derauMerek)">STOK MENYAN</text></svg>
 </div></div>
@@ -166,11 +199,14 @@ const MODUL = [
   ["masuk", "MASUK", "Catat barang masuk"],
   ["keluar", "KELUAR", "Catat barang keluar"],
   ["laporan", "LAPORAN", "Riwayat, saldo, unduh Excel"],
+  ["modal", "HARGA MODAL", "Menyan peti, gambir, buangan"],
 ];
+// bagian sheet "Harga Modal Menyan/Gambir": menyan peti berharga per jenis hasil ayakan, gambir dan buangan satu harga
+const BAGIAN_MODAL = [["menyan", "Menyan peti", "Nama peti"], ["gambir", "Gambir", "Nama gambir"], ["buangan", "Buangan", "Nama buangan"]];
 const BARIS_AWAL = 5;
 document.getElementById("nav").innerHTML = '<a href="#">Menu</a>' + MODUL.map(([k, n]) => `<a href="#${k}">${n}</a>`).join("");
 const isi = document.getElementById("isi");
-let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" }, rentang = null;
+let sesi = null, data = null, ubah = null, saring = { dari: "", sampai: "" }, rentang = null, bagianModal = "menyan";
 try { sesi = JSON.parse(localStorage.getItem(SIMPAN)); } catch (e) { sesi = null; }
 
 const aman = t => String(t ?? "").replace(/[&<>"']/g, h => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[h]));
@@ -219,7 +255,7 @@ async function muat() {
 function duaKali(tombol, jalankan, tanya = "Yakin hapus?") {
   if (tombol.dataset.yakin) return jalankan();
   const asal = tombol.textContent;
-  tombol.dataset.yakin = "1"; tombol.textContent = tanya; tombol.style.borderColor = tombol.style.color = "#f0958a";
+  tombol.dataset.yakin = "1"; tombol.textContent = tanya; tombol.style.borderColor = tombol.style.color = "var(--buruk)";
   setTimeout(() => { if (tombol.isConnected) { delete tombol.dataset.yakin; tombol.textContent = asal; tombol.style.borderColor = tombol.style.color = ""; } }, 4000);
 }
 
@@ -428,7 +464,7 @@ function panelPermintaan() {
     <div class="catatan">Kirim = dicatat sebagai barang keluar hari ini untuk pelanggan itu, lalu hilang dari daftar ini.</div>
     <h2>Yang perlu dibuat</h2><div class="gulung" style="max-height:none"><table><thead><tr><th>Nama barang</th><th class="angka">Diminta</th><th class="angka">Stok</th><th class="angka">Perlu dibuat</th><th>Bahan untuk 1 barang</th></tr></thead><tbody>${
       produk.map(x => `<tr><td>${aman(x.b.nama)}</td><td class="angka">${angka(x.jml)}</td>${stokSel(x.b.stok)}<td class="angka"><b>${angka(x.buat)}</b></td><td>${
-        x.resep.length ? x.resep.map(r => angka(r.jumlah) + " × " + aman(brg.get(r.bahan_id).nama)).join(", ") : '<a href="#resep" style="color:#6fb3d2">Bahan belum diisi</a>'}</td></tr>`).join("")
+        x.resep.length ? x.resep.map(r => angka(r.jumlah) + " × " + aman(brg.get(r.bahan_id).nama)).join(", ") : '<a href="#resep" style="color:var(--aksen)">Bahan belum diisi</a>'}</td></tr>`).join("")
     }</tbody></table></div>
     <h2>Bahan yang perlu diproses</h2><div class="gulung" style="max-height:none">${bahan.length ? `<table><thead><tr><th>Bahan</th><th>Untuk</th><th class="angka">Perlu</th><th class="angka">Stok bahan</th><th class="angka">Kurang</th></tr></thead><tbody>${
       bahan.map(k => { const kurang = Math.max(0, bulat(k.perlu - Math.max(k.b.stok, 0))); return `<tr><td>${aman(k.b.nama)}</td><td>${aman(k.untuk.join(", "))}</td><td class="angka"><b>${angka(k.perlu)}</b></td>${stokSel(k.b.stok)}<td class="angka ${kurang ? "minus" : ""}">${angka(kurang)}</td></tr>`; }).join("")
@@ -512,12 +548,64 @@ function layarResep(kabar) {
   el("rProduk").focus();
 }
 
+// ---------- harga modal: menyan peti (harga per jenis hasil ayakan), gambir, buangan ----------
+function layarModal(kabar) {
+  const kini = ubah && ubah.jenis === "modal" ? data.harga_modal.find(x => x.id === ubah.id) : null;
+  if (kini) bagianModal = kini.bagian;
+  const kolomBagian = k => k === "menyan" ? data.kolom_modal : ["Harga"];
+  const kolom = kolomBagian(bagianModal);
+  const [, sebut, labelNama] = BAGIAN_MODAL.find(b => b[0] === bagianModal);
+  const tabel = ([k, n, label]) => {
+    const baris = data.harga_modal.filter(x => x.bagian === k), kol = kolomBagian(k);
+    return `<h2>${n} (${baris.length})</h2><div class="gulung" style="max-height:none">${baris.length
+      ? `<table><thead><tr><th>${label}</th>${kol.map(c => `<th class="angka">${aman(c)}</th>`).join("")}<th></th></tr></thead><tbody>${
+        baris.map(x => `<tr><td>${aman(x.nama)}</td>${kol.map(c => `<td class="angka">${x.harga[c] == null ? "" : angka(x.harga[c])}</td>`).join("")}` +
+          `<td class="aksi"><button class="tipis" data-ubah="${x.id}">Edit</button><button class="tipis" data-hapus="${x.id}">Hapus</button></td></tr>`).join("")
+      }</tbody></table>` : `<div class="kosong">Belum ada harga modal ${n.toLowerCase()}.</div>`}</div>`;
+  };
+  isi.innerHTML = `<div class="dua"><div>${kepalaModul("modal")}<form class="kartu" id="formModal">
+      <div class="pil" style="margin-bottom:16px">${BAGIAN_MODAL.map(([k, n]) => `<button class="tipis${k === bagianModal ? " kini" : ""}" type="button" data-bagian="${k}">${n}</button>`).join("")}</div>
+      <div class="isian"><label class="lebar">${labelNama}<input id="hNama" maxlength="80" required autocomplete="off" ${bagianModal === "menyan" ? 'list="pilihBarang"' : ""} value="${aman(kini?.nama)}"></label></div>
+      <div class="isian" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr))">${kolom.map((c, i) => `<label>${aman(c)}<input class="hHarga" data-kolom="${i}" inputmode="numeric" autocomplete="off" placeholder="${bagianModal === "menyan" ? "kosong" : "0"}" value="${kini && kini.harga[c] != null ? angka(kini.harga[c]) : ""}"></label>`).join("")}</div>
+      <div class="tombol"><button class="utama" type="submit">${kini ? "Simpan perubahan" : "Tambah " + sebut.toLowerCase()}</button>${kini ? '<button class="tipis" type="button" id="hBatal">Tidak jadi</button>' : ""}</div>
+      <div class="pesan" id="hPesan"></div>
+      <div class="catatan">Angka ditulis seperti di sheet, contoh: 385. ${bagianModal === "menyan" ? "Jenis yang tidak ada harganya dikosongkan." : ""}</div></form></div>
+    <div id="tabelUtama">${BAGIAN_MODAL.map(tabel).join("")}</div></div>`;
+  if (kabar) pesan("hPesan", kabar, true);
+  const kirim = async (jalur, badan, berhasil) => {
+    try { await panggil(jalur, badan); ubah = null; await muat(); layarModal(berhasil); }
+    catch (g) { pesan("hPesan", g.message); }
+  };
+  isi.querySelectorAll("[data-bagian]").forEach(t => t.addEventListener("click", () => { ubah = null; bagianModal = t.dataset.bagian; layarModal(); }));
+  el("formModal").addEventListener("submit", e => {
+    e.preventDefault();
+    const harga = {};
+    for (const m of isi.querySelectorAll(".hHarga")) {
+      m.classList.remove("salah");
+      if (m.value.trim() === "") continue;
+      const n = bacaAngka(m.value);
+      if (!Number.isInteger(n) || n < 0) { m.classList.add("salah"); return pesan("hPesan", `Harga ${kolom[m.dataset.kolom]} harus angka bulat, contoh: 385`); }
+      harga[kolom[m.dataset.kolom]] = n;
+    }
+    if (bagianModal !== "menyan" && !("Harga" in harga)) return pesan("hPesan", "Harga wajib diisi, boleh 0.");
+    const badan = { bagian: bagianModal, nama: el("hNama").value, harga };
+    if (kini) badan.id = kini.id;
+    kirim("harga-modal", badan, kini ? "Perubahan tersimpan." : "Tersimpan: " + badan.nama.trim());
+  });
+  if (kini) el("hBatal").addEventListener("click", () => { ubah = null; layarModal(); });
+  isi.querySelectorAll("[data-ubah]").forEach(t => t.addEventListener("click", () => { ubah = { jenis: "modal", id: +t.dataset.ubah }; layarModal(); window.scrollTo(0, 0); el("hNama").focus(); }));
+  isi.querySelectorAll("[data-hapus]").forEach(t => t.addEventListener("click", () => {
+    const x = data.harga_modal.find(y => y.id === +t.dataset.hapus);
+    duaKali(t, () => kirim("harga-modal/hapus", { id: x.id }, x.nama + " dihapus."));
+  }));
+}
+
 async function layarCatat(jenis, kabar) {
   const minta = jenis === "permintaan", keluar = minta || jenis === "keluar";
   const barang = new Map(data.barang.filter(b => b.aktif).map(b => [kunci(b.nama), b]));
   const pelanggan = new Map(data.pelanggan.filter(p => p.aktif).map(p => [kunci(p.nama), p]));
-  const kurang = !barang.size ? 'Belum ada barang. Isi dulu <a href="#barang" style="color:#6fb3d2">Master Barang</a>.'
-    : keluar && !pelanggan.size ? 'Belum ada pelanggan. Isi dulu <a href="#pelanggan" style="color:#6fb3d2">Master Pelanggan</a>.' : "";
+  const kurang = !barang.size ? 'Belum ada barang. Isi dulu <a href="#barang" style="color:var(--aksen)">Master Barang</a>.'
+    : keluar && !pelanggan.size ? 'Belum ada pelanggan. Isi dulu <a href="#pelanggan" style="color:var(--aksen)">Master Pelanggan</a>.' : "";
   const terakhir = minta ? [] : (await panggil("laporan?jenis=" + jenis + "&batas=30")).baris;
   const barisIsian = () => `<tr><td><input class="bNama besar" list="pilihBarang" autocomplete="off" placeholder="Ketik nama barang"></td>
     <td class="qty"><input class="bQty" inputmode="decimal" autocomplete="off" placeholder="0"></td>${keluar ? '<td class="sub angka"></td>' : ""}
@@ -640,6 +728,7 @@ async function tampil() {
     if (k === "barang" || k === "pelanggan") layarMaster(k);
     else if (k === "stok") layarStok();
     else if (k === "resep") layarResep();
+    else if (k === "modal") layarModal();
     else if (k === "dashboard") await layarDashboard();
     else if (k === "laporan") await layarLaporan();
     else await layarCatat(k);

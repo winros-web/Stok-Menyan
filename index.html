@@ -227,7 +227,7 @@ async function panggil(jalur, badan) {
   if (badan) kepala["Content-Type"] = "application/json";
   let jawab;
   try {
-    jawab = await fetch(API + jalur, { method: badan ? "POST" : "GET", headers: kepala, body: badan ? JSON.stringify(badan) : undefined, cache: "no-store" });
+    jawab = await fetch(API + jalur, { method: badan ? "POST" : "GET", headers: kepala, body: badan ? JSON.stringify(badan) : undefined });
   } catch (e) {
     throw new Galat(0, "Tidak tersambung ke server. Periksa internet, lalu coba lagi.");
   }
@@ -247,8 +247,11 @@ function kotakGagal(g) {
   isi.innerHTML = `<div class="kartu sempit"><h2 style="margin-top:0">Tidak tersambung</h2><div>${aman(g.message)}</div><div class="tombol"><button class="utama" onclick="location.reload()">Coba lagi</button></div></div>`;
 }
 
+let dataWaktu = 0;   // kapan data induk terakhir dimuat (21 Nov 2026: pindah menu tidak memuat ulang bila masih baru)
+const DATA_SEGAR_MS = 60000;
 async function muat() {
   data = await panggil("data");
+  dataWaktu = Date.now();
   el("waktu").textContent = "DATA " + tgl(data.waktu.slice(0, 10)) + " " + data.waktu.slice(11, 16).replace(":", ".");
   el("pilihBarang").innerHTML = data.barang.filter(b => b.aktif).map(b => `<option value="${aman(b.nama)}">`).join("");
   el("pilihPelanggan").innerHTML = data.pelanggan.filter(p => p.aktif).map(p => `<option value="${aman(p.nama)}">`).join("");
@@ -720,7 +723,10 @@ async function tampil() {
   const k = location.hash.slice(1);
   if (k !== "laporan") saring = { dari: "", sampai: "" };
   try {
-    await muat();
+    if (!data || Date.now() - dataWaktu > DATA_SEGAR_MS) {
+      if (!data) { document.body.className = "utama"; isi.innerHTML = '<div class="kartu sempit"><div>Memuat data…</div></div>'; }
+      await muat();
+    }
     el("tombolSegar").hidden = el("tombolKeluar").hidden = el("nav").hidden = false;
     const modulKini = MODUL.some(m => m[0] === k) ? k : "";
     el("nav").querySelectorAll("a").forEach(a => a.classList.toggle("kini", a.getAttribute("href") === "#" + modulKini));
@@ -737,7 +743,7 @@ async function tampil() {
   } catch (g) { if (sesi) kotakGagal(g); }
 }
 window.addEventListener("hashchange", () => { ubah = null; tampil(); });
-el("tombolSegar").addEventListener("click", tampil);
+el("tombolSegar").addEventListener("click", () => { dataWaktu = 0; tampil(); });
 el("tombolKeluar").addEventListener("click", async () => {
   try { await panggil("keluar", {}); } catch (g) { /* sesi di server habis sendiri dalam 12 jam */ }
   lupaSesi(); location.hash = ""; tampil();
